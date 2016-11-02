@@ -11,7 +11,7 @@ Usage:
  iazel:regenurl [-s|--store="..."] [pids1] ... [pidsN]
 
 Arguments:
- pids                  Products to regenerate (default: [])
+ pids                  Products to regenerate
 
 Options:
  --store (-s)          Use the specific Store View (default: 0)
@@ -20,6 +20,9 @@ Options:
 
 Eg:
 ```sh
-# Regenerate url for products with id (1, 2, 3, 4) of store 1
+# Regenerate url for all products and the global store
+php bin/magento iazel:regenurl
+
+# Regenerate url for products with id (1, 2, 3, 4) for store 1
 php bin/magento iazel:regenurl -s1 1 2 3 4
 ```
