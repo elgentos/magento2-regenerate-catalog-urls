@@ -89,7 +89,7 @@ class RegenerateProductUrlCommand extends Command
                 );
             }
             catch(\Exception $e) {
-                $out->writeln("<error>$pid</error>");
+                $out->writeln('<error>Duplicated url for '. $product->getId() .'</error>');
             }
         }
     }
