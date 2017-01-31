@@ -2,7 +2,6 @@
 Download and copy the `Iazel` directory into `app/code/` or install using composer
 
 ```sh
-composer config repositories.regenurl vcs https://github.com/Iazel/magento2-regenurl
 composer require iazel/module-regen-product-url 
 ```
 
