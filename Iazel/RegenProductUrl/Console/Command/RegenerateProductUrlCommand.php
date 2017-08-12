@@ -11,6 +11,7 @@ use Magento\UrlRewrite\Model\UrlPersistInterface;
 use Magento\CatalogUrlRewrite\Model\ProductUrlRewriteGenerator;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Store\Model\Store;
+use Magento\Framework\App\State;
 
 class RegenerateProductUrlCommand extends Command
 {
@@ -29,13 +30,18 @@ class RegenerateProductUrlCommand extends Command
      */
     protected $collection;
 
+    /**
+     * @var \Magento\Framework\App\State
+     */
+    protected $state;
+
     public function __construct(
-        \Magento\Framework\App\State $state,
+        State $state,
         Collection $collection,
         ProductUrlRewriteGenerator $productUrlRewriteGenerator,
         UrlPersistInterface $urlPersist
     ) {
-        $state->setAreaCode('adminhtml');
+        $this->state = $state;
         $this->collection = $collection;
         $this->productUrlRewriteGenerator = $productUrlRewriteGenerator;
         $this->urlPersist = $urlPersist;
@@ -63,6 +69,10 @@ class RegenerateProductUrlCommand extends Command
 
     public function execute(InputInterface $inp, OutputInterface $out)
     {
+        if (!$this->state->getAreaCode()) {
+            $this->state->setAreaCode('adminhtml');
+        }
+
         $store_id = $inp->getOption('store');
         $this->collection->addStoreFilter($store_id)->setStoreId($store_id);
 
