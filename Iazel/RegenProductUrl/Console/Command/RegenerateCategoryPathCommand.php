@@ -1,25 +1,24 @@
 <?php
 namespace Iazel\RegenProductUrl\Console\Command;
 
+use Magento\Framework\EntityManager\EventManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
 use Magento\UrlRewrite\Model\UrlPersistInterface;
-use Magento\CatalogUrlRewrite\Model\CategoryUrlRewriteGenerator;
+use Magento\CatalogUrlRewrite\Model\CategoryUrlPathGenerator;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
-use Magento\Catalog\Model\ResourceModel\Category\Collection;
 use Magento\Store\Model\Store;
 use Magento\Framework\App\State;
 
-class RegenerateCategoryUrlCommand extends Command
+class RegenerateCategoryPathCommand extends Command
 {
     /**
-     * @var CategoryUrlRewriteGenerator
+     * @var CategoryUrlPathGenerator
      */
-    protected $categoryUrlRewriteGenerator;
+    protected $categoryUrlPathGenerator;
 
     /**
      * @var UrlPersistInterface
@@ -39,26 +38,30 @@ class RegenerateCategoryUrlCommand extends Command
      * @var CategoryCollectionFactory
      */
     private $categoryCollectionFactory;
+    /**
+     * @var EventManager
+     */
+    private $eventManager;
 
     public function __construct(
         State $state,
-        Collection $collection,
-        CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator,
+        CategoryCollectionFactory $categoryCollectionFactory,
+        CategoryUrlPathGenerator $categoryUrlPathGenerator,
         UrlPersistInterface $urlPersist,
-        CategoryCollectionFactory $categoryCollectionFactory
+        EventManager $eventManager
     ) {
         $this->state = $state;
-        $this->collection = $collection;
-        $this->categoryUrlRewriteGenerator = $categoryUrlRewriteGenerator;
+        $this->categoryUrlPathGenerator = $categoryUrlPathGenerator;
         $this->urlPersist = $urlPersist;
-        $this->categoryCollectionFactory = $categoryCollectionFactory;
         parent::__construct();
+        $this->categoryCollectionFactory = $categoryCollectionFactory;
+        $this->eventManager = $eventManager;
     }
 
     protected function configure()
     {
-        $this->setName('regenerate:category:url')
-            ->setDescription('Regenerate url for given categories')
+        $this->setName('regenerate:category:path')
+            ->setDescription('Regenerate path for given categories')
             ->addArgument(
                 'cids',
                 InputArgument::IS_ARRAY,
@@ -97,26 +100,12 @@ class RegenerateCategoryUrlCommand extends Command
         foreach($categories as $category)
         {
             $out->writeln('Regenerating urls for ' . $category->getName() . ' (' . $category->getId() . ')');
-            if($store_id !== Store::DEFAULT_STORE_ID) {
-                $category->setStoreId($store_id);
-            }
 
-            $this->urlPersist->deleteByData([
-                UrlRewrite::ENTITY_ID => $category->getId(),
-                UrlRewrite::ENTITY_TYPE => CategoryUrlRewriteGenerator::ENTITY_TYPE,
-                UrlRewrite::REDIRECT_TYPE => 0,
-                UrlRewrite::STORE_ID => $store_id
-            ]);
-
-            $newUrls = $this->categoryUrlRewriteGenerator->generate($category);
-            try {
-                $this->urlPersist->replace($newUrls);
-                $regenerated += count($newUrls);
-            }
-            catch(\Exception $e) {
-                $out->writeln(sprintf('<error>Duplicated url for store ID %d, category %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $store_id, $category->getId(), $category->getName(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
-            }
+            // Make use of Magento's event for this
+            $this->eventManager->dispatch('regenerate_category_url_path', ['category' => $category]);
+            $regenerated++;
         }
-        $out->writeln('Done regenerating. Regenerated ' . $regenerated . ' urls');
+
+        $out->writeln('Done regenerating. Regenerated url paths for ' . $regenerated . ' categories');
     }
 }

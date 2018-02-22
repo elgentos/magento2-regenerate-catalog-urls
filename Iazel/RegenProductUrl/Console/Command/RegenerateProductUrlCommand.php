@@ -50,7 +50,7 @@ class RegenerateProductUrlCommand extends Command
 
     protected function configure()
     {
-        $this->setName('iazel:regenurl')
+        $this->setName('regenerate:product:url')
             ->setDescription('Regenerate url for given products')
             ->addArgument(
                 'pids',
