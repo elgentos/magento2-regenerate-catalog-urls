@@ -15,4 +15,5 @@
             </argument>
         </arguments>
     </type>
+    <preference for="Magento\CatalogUrlRewrite\Model\CategoryUrlPathGenerator" type="Iazel\RegenProductUrl\Model\CategoryUrlPathGenerator" />
 </config>

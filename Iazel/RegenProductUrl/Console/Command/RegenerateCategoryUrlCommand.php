@@ -1,6 +1,8 @@
 <?php
 namespace Iazel\RegenProductUrl\Console\Command;
 
+use Magento\Framework\App\Area;
+use Magento\Store\Model\App\Emulation;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -39,20 +41,36 @@ class RegenerateCategoryUrlCommand extends Command
      * @var CategoryCollectionFactory
      */
     private $categoryCollectionFactory;
+    /**
+     * @var Emulation
+     */
+    private $emulation;
 
+    /**
+     * RegenerateCategoryUrlCommand constructor.
+     * @param State $state
+     * @param Collection $collection
+     * @param CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator
+     * @param UrlPersistInterface $urlPersist
+     * @param CategoryCollectionFactory $categoryCollectionFactory
+     * @param Emulation $emulation
+     */
     public function __construct(
         State $state,
         Collection $collection,
         CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator,
         UrlPersistInterface $urlPersist,
-        CategoryCollectionFactory $categoryCollectionFactory
+        CategoryCollectionFactory $categoryCollectionFactory,
+        Emulation $emulation
     ) {
         $this->state = $state;
         $this->collection = $collection;
         $this->categoryUrlRewriteGenerator = $categoryUrlRewriteGenerator;
         $this->urlPersist = $urlPersist;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
+
         parent::__construct();
+        $this->emulation = $emulation;
     }
 
     protected function configure()
@@ -83,6 +101,7 @@ class RegenerateCategoryUrlCommand extends Command
         }
 
         $store_id = $inp->getOption('store');
+        $this->emulation->startEnvironmentEmulation($store_id, Area::AREA_FRONTEND, true);
 
         $categories = $this->categoryCollectionFactory->create()
             ->setStore($store_id)
@@ -97,9 +116,6 @@ class RegenerateCategoryUrlCommand extends Command
         foreach($categories as $category)
         {
             $out->writeln('Regenerating urls for ' . $category->getName() . ' (' . $category->getId() . ')');
-            if($store_id !== Store::DEFAULT_STORE_ID) {
-                $category->setStoreId($store_id);
-            }
 
             $this->urlPersist->deleteByData([
                 UrlRewrite::ENTITY_ID => $category->getId(),
@@ -117,6 +133,7 @@ class RegenerateCategoryUrlCommand extends Command
                 $out->writeln(sprintf('<error>Duplicated url for store ID %d, category %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $store_id, $category->getId(), $category->getName(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
             }
         }
+        $this->emulation->stopEnvironmentEmulation();
         $out->writeln('Done regenerating. Regenerated ' . $regenerated . ' urls');
     }
 }
