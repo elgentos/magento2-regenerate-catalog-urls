@@ -84,8 +84,10 @@ class RegenerateProductUrlCommand extends Command
 
         $this->collection->addAttributeToSelect(['url_path', 'url_key']);
         $list = $this->collection->load();
+        $regenerated = 0;
         foreach($list as $product)
         {
+            $out->writeln('Regenerating urls for ' . $product->getSku() . ' (' . $product->getId() . ')');
             if($store_id !== Store::DEFAULT_STORE_ID)
                 $product->setStoreId($store_id);
 
@@ -95,14 +97,16 @@ class RegenerateProductUrlCommand extends Command
                 UrlRewrite::REDIRECT_TYPE => 0,
                 UrlRewrite::STORE_ID => $store_id
             ]);
+
+            $newUrls = $this->productUrlRewriteGenerator->generate($product);
             try {
-                $this->urlPersist->replace(
-                    $this->productUrlRewriteGenerator->generate($product)
-                );
+                $this->urlPersist->replace($newUrls);
+                $regenerated += count($newUrls);
             }
             catch(\Exception $e) {
-                $out->writeln('<error>Duplicated url for '. $product->getId() .'</error>');
+                $out->writeln(sprintf('<error>Duplicated url for store ID %d, product %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $store_id, $product->getId(), $product->getSku(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
             }
         }
+        $out->writeln('Done regenerating. Regenerated ' . $regenerated . ' urls');
     }
 }
