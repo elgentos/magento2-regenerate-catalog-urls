@@ -1,3 +1,10 @@
+# What does it do
+This extension adds console commands to be able to regenerate;
+
+- a product rewrite URL based on its url path;
+- a category rewrite URL based on its url path;
+- a category URL path based on its URL key and its parent categories.
+
 # Install
 Download and copy the `Iazel` directory into `app/code/` or install using composer
 
@@ -13,10 +20,13 @@ php bin/magento setup:upgrade
 # How to use
 ```
 Usage:
- iazel:regenurl [-s|--store="..."] [pids1] ... [pidsN]
+ regenerate:product:url [-s|--store="..."] [pids1] ... [pidsN]
+ regenerate:category:url [-s]--store="..."] [cids1] ... [cidsN]
+ regenerate:category:path [-s]--store="..."] [cids1] ... [cidsN]
 
 Arguments:
  pids                  Products to regenerate
+ cids                  Categories to regenerate
 
 Options:
  --store (-s)          Use the specific Store View (default: 0)
@@ -26,8 +36,8 @@ Options:
 Eg:
 ```sh
 # Regenerate url for all products and the global store
-php bin/magento iazel:regenurl
+php bin/magento regenerate:product
 
 # Regenerate url for products with id (1, 2, 3, 4) for store 1
-php bin/magento iazel:regenurl -s1 1 2 3 4
+php bin/magento regenerate:product:url -s1 1 2 3 4
 ```
