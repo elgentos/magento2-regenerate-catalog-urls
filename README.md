@@ -6,16 +6,15 @@ This extension adds console commands to be able to regenerate;
 - a category URL path based on its URL key and its parent categories.
 
 # Install
-Download and copy the `Iazel` directory into `app/code/` or install using composer
+Using Composer;
 
 ```sh
-composer require iazel/module-regen-product-url 
-```
-
-Then call:
-```sh
+composer config repositories.regenurl vcs git@github.com:peterjaap/magento2-regenurl.git
+composer require iazel/module-regen-product-url
 php bin/magento setup:upgrade
 ```
+
+Or download and copy the `Iazel` directory into `app/code/` and run `php bin/magento setup:upgrade`.
 
 # How to use
 ```
