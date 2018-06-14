@@ -14,4 +14,11 @@
             </argument>
         </arguments>
     </type>
+    <type name="Iazel\RegenProductUrl\Console\Command\RegenerateProductUrlCommand">
+        <arguments>
+            <argument name="state" xsi:type="object">Magento\Framework\App\State\Proxy</argument>
+            <argument name="collection" xsi:type="object">Magento\Catalog\Model\ResourceModel\Product\Collection\Proxy</argument>
+            <argument name="productUrlRewriteGenerator" xsi:type="object">Magento\CatalogUrlRewrite\Model\ProductUrlRewriteGenerator\Proxy</argument>
+        </arguments>
+    </type>
 </config>
