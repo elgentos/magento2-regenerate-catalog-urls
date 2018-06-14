@@ -51,6 +51,8 @@ class RegenerateCategoryUrlCommand extends Command
      */
     protected $_category_suffixes = [];
 
+    protected $categoryCollectionFactory;
+
     /**
      * RegenerateUrls constructor.
      *
@@ -65,6 +67,7 @@ class RegenerateCategoryUrlCommand extends Command
         \Magento\Catalog\Helper\Category $categoryHelper,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
         $name = 'regenerate_category_urls'
     ) {
         $this->urlRewriteFactory = $urlRewriteFactory;
@@ -72,6 +75,7 @@ class RegenerateCategoryUrlCommand extends Command
         $this->_categoryHelper   = $categoryHelper;
         $this->_categoryFactory  = $categoryFactory;
         $this->scopeConfig       = $scopeConfig;
+        $this->categoryCollectionFactory = $categoryCollectionFactory;
         parent::__construct($name);
     }
 
@@ -133,7 +137,7 @@ class RegenerateCategoryUrlCommand extends Command
         } else {
             $parent_id                                          = $current_category->getId();
             $this->_categoryUrlKeys[$current_category->getId()] = $current_category->getUrlKey();
-            $path_exploded                                      = explode('/', $current_category->getPathId());
+            $path_exploded                                      = explode('/', $current_category->getPath());
             $complete_path                                      = [];
             foreach ($path_exploded as $path) {
                 if ($path == 1 || $path == $store->getRootCategoryId()) {
@@ -145,10 +149,16 @@ class RegenerateCategoryUrlCommand extends Command
             $this->insertIntoRewrites($current_category->getId(), $complete_path, $store->getId());
         }
         $category = $this->_categoryFactory->create();
+        $categoryTmp = $this->_categoryFactory->create()->load($parent_id);
         $recursionLevel     = 0;
-        $childrenCategories = $category->getCategories($parent_id, $recursionLevel, false, false, true);
-        if (count($childrenCategories)) {
-            foreach ($childrenCategories as $child) {
+
+        $collection = $this->categoryCollectionFactory->create()
+            ->addPathsFilter($categoryTmp->getPath().'/')
+            ->addLevelFilter($categoryTmp->getLevel() + $recursionLevel + 1)
+            ->addAttributeToSelect('url_key');
+
+        if (count($collection)) {
+            foreach ($collection as $child) {
                 $this->getChildrenCategories($store, $child);
             }
         }
