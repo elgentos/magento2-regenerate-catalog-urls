@@ -126,6 +126,7 @@ class RegenerateCategoryUrlCommand extends Command
 
             $newUrls = $this->categoryUrlRewriteGenerator->generate($category);
             try {
+                $newUrls = $this->filterEmptyRequestPaths($newUrls);
                 $this->urlPersist->replace($newUrls);
                 $regenerated += count($newUrls);
             }
@@ -136,4 +137,22 @@ class RegenerateCategoryUrlCommand extends Command
         $this->emulation->stopEnvironmentEmulation();
         $out->writeln('Done regenerating. Regenerated ' . $regenerated . ' urls');
     }
+    
+    /**
+     * Remove entries with request_path='' to prevent error 404 for "http://site.com/" address.
+     *
+     * @param \Magento\UrlRewrite\Service\V1\Data\UrlRewrite[] $newUrls
+     * @return \Magento\UrlRewrite\Service\V1\Data\UrlRewrite[]
+     */
+    private function filterEmptyRequestPaths($newUrls)
+    {
+        $result = [];
+        foreach ($newUrls as $key => $url) {
+            $requestPath = $url->getRequestPath();
+            if (!empty($requestPath)) {
+                $result[$key] = $url;
+            }
+        }
+        return $result;
+    }    
 }
