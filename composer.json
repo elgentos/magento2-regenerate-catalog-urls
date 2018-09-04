@@ -1,5 +1,5 @@
 {
-  "name": "elgentos/module-regen-product-url",
+  "name": "elgentos/regenerate-catalog-urls",
   "description": "N/A",
   "require": {
     "php": "~5.6.0|~7.0|~7.1|~7.2",
