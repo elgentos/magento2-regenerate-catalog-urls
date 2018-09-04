@@ -2,7 +2,7 @@
   "name": "iazel/module-regen-product-url",
   "description": "N/A",
   "require": {
-    "php": "~5.6.0|~7.0",
+    "php": "~5.6.0|~7.0|~7.1|~7.2",
     "magento/framework": ">=100.1",
     "magento/module-catalog-url-rewrite": ">=100.1",
     "magento/magento-composer-installer": "*"
