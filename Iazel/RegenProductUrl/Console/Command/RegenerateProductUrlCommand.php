@@ -1,7 +1,7 @@
 <?php
 namespace Iazel\RegenProductUrl\Console\Command;
 
-use Magento\Store\Model\StoreManager;
+use Magento\Catalog\Model\Product\Visibility;
 use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
@@ -28,7 +28,7 @@ class RegenerateProductUrlCommand extends Command
     protected $urlPersist;
 
     /**
-     * @var ProductRepositoryInterface
+     * @var Collection
      */
     protected $collection;
 
@@ -68,48 +68,52 @@ class RegenerateProductUrlCommand extends Command
     {
         $this->setName('regenerate:product:url')
             ->setDescription('Regenerate url for given products')
-            ->addArgument(
-                'pids',
-                InputArgument::IS_ARRAY,
-                'Products to regenerate'
-            )
             ->addOption(
                 'store', 's',
                 InputOption::VALUE_REQUIRED,
-                'Use the specific Store View',
+                'Regenerate for one specific store view',
                 Store::DEFAULT_STORE_ID
             )
-            ;
-        return parent::configure();
+            ->addArgument(
+                'pids',
+                InputArgument::IS_ARRAY,
+                'Product IDs to regenerate'
+            );
     }
 
-    public function execute(InputInterface $inp, OutputInterface $out)
+    public function execute(InputInterface $input, OutputInterface $output)
     {
-        try{
+        try {
             $this->state->getAreaCode();
-        }catch ( \Magento\Framework\Exception\LocalizedException $e){
+        } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->state->setAreaCode('adminhtml');
         }
 
-        $store_id = $inp->getOption('store');
+        $storeId = $input->getOption('store');
         $stores = $this->storeManager->getStores(false);
 
-        if (!is_numeric($store_id)) {
-            $store_id = $this->getStoreIdByCode($store_id, $stores);
+        if (!is_numeric($storeId)) {
+            $storeId = $this->getStoreIdByCode($storeId, $stores);
+        }
+
+        if (!is_numeric($storeId)) {
+            throw new \Exception('Store could not be found. Please enter a store ID or a store code.');
+        } else {
+            $this->storeManager->getStore($storeId);
         }
 
         foreach ($stores as $store) {
             // If store has been given through option, skip other stores
-            if ($store_id != Store::DEFAULT_STORE_ID AND $store->getId() != $store_id) {
+            if ($storeId != Store::DEFAULT_STORE_ID AND $store->getId() != $storeId) {
                 continue;
             }
 
             $this->collection
-                ->addStoreFilter($store_id)
-                ->setStoreId($store_id)
+                ->addStoreFilter($storeId)
+                ->setStoreId($storeId)
                 ->addFieldToFilter('visibility', ['gt' => Visibility::VISIBILITY_NOT_VISIBLE]);
 
-            $pids = $inp->getArgument('pids');
+            $pids = $input->getArgument('pids');
             if (!empty($pids)) {
                 $this->collection->addIdFilter($pids);
             }
@@ -117,15 +121,17 @@ class RegenerateProductUrlCommand extends Command
             $this->collection->addAttributeToSelect(['url_path', 'url_key']);
             $list = $this->collection->load();
             $regenerated = 0;
+
+            /** @var \Magento\Catalog\Model\Product $product */
             foreach ($list as $product) {
                 echo 'Regenerating urls for ' . $product->getSku() . ' (' . $product->getId() . ') in store ' . $store->getName() . PHP_EOL;
-                $product->setStoreId($store_id);
+                $product->setStoreId($storeId);
 
                 $this->urlPersist->deleteByData([
                     UrlRewrite::ENTITY_ID => $product->getId(),
                     UrlRewrite::ENTITY_TYPE => ProductUrlRewriteGenerator::ENTITY_TYPE,
                     UrlRewrite::REDIRECT_TYPE => 0,
-                    UrlRewrite::STORE_ID => $store_id
+                    UrlRewrite::STORE_ID => $storeId
                 ]);
 
                 $newUrls = $this->productUrlRewriteGenerator->generate($product);
@@ -133,10 +139,10 @@ class RegenerateProductUrlCommand extends Command
                     $this->urlPersist->replace($newUrls);
                     $regenerated += count($newUrls);
                 } catch (\Exception $e) {
-                    $out->writeln(sprintf('<error>Duplicated url for store ID %d, product %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $store_id, $product->getId(), $product->getSku(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
+                    $output->writeln(sprintf('<error>Duplicated url for store ID %d, product %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $storeId, $product->getId(), $product->getSku(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
                 }
             }
-            $out->writeln('Done regenerating. Regenerated ' . $regenerated . ' urls for store ' . $store->getName());
+            $output->writeln('Done regenerating. Regenerated ' . $regenerated . ' urls for store ' . $store->getName());
         }
     }
 
@@ -148,6 +154,6 @@ class RegenerateProductUrlCommand extends Command
             }
         }
 
-        return Store::DEFAULT_STORE_ID;
+        return false;
     }
 }
