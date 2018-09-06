@@ -104,7 +104,10 @@ class RegenerateProductUrlCommand extends Command
                 continue;
             }
 
-            $this->collection->addStoreFilter($store_id)->setStoreId($store_id);
+            $this->collection
+                ->addStoreFilter($store_id)
+                ->setStoreId($store_id)
+                ->addFieldToFilter('visibility', ['gt' => Visibility::VISIBILITY_NOT_VISIBLE]);
 
             $pids = $inp->getArgument('pids');
             if (!empty($pids)) {
