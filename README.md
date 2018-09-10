@@ -9,7 +9,6 @@ This extension adds console commands to be able to regenerate;
 Using Composer;
 
 ```sh
-composer config repositories.regenurl vcs git@github.com:elgentos/regenerate-catalog-urls.git
 composer require elgentos/regenerate-catalog-urls
 php bin/magento setup:upgrade
 ```
