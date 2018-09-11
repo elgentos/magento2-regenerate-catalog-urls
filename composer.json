@@ -19,5 +19,8 @@
     "psr-4": {
       "Iazel\\RegenProductUrl\\": "Iazel/RegenProductUrl"
     }
+  },
+  "replace": {
+    "iazel/module-regen-product-url": "*"
   }
 }
