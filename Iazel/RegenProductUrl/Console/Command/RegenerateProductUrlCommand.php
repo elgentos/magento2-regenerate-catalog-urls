@@ -109,8 +109,8 @@ class RegenerateProductUrlCommand extends Command
             }
 
             $this->collection
-                ->addStoreFilter($storeId)
-                ->setStoreId($storeId)
+                ->addStoreFilter($store->getId())
+                ->setStoreId($store->getId())
                 ->addFieldToFilter('visibility', ['gt' => Visibility::VISIBILITY_NOT_VISIBLE]);
 
             $pids = $input->getArgument('pids');
@@ -125,13 +125,13 @@ class RegenerateProductUrlCommand extends Command
             /** @var \Magento\Catalog\Model\Product $product */
             foreach ($list as $product) {
                 echo 'Regenerating urls for ' . $product->getSku() . ' (' . $product->getId() . ') in store ' . $store->getName() . PHP_EOL;
-                $product->setStoreId($storeId);
+                $product->setStoreId($store->getId());
 
                 $this->urlPersist->deleteByData([
                     UrlRewrite::ENTITY_ID => $product->getId(),
                     UrlRewrite::ENTITY_TYPE => ProductUrlRewriteGenerator::ENTITY_TYPE,
                     UrlRewrite::REDIRECT_TYPE => 0,
-                    UrlRewrite::STORE_ID => $storeId
+                    UrlRewrite::STORE_ID => $store->getId()
                 ]);
 
                 $newUrls = $this->productUrlRewriteGenerator->generate($product);
@@ -139,7 +139,7 @@ class RegenerateProductUrlCommand extends Command
                     $this->urlPersist->replace($newUrls);
                     $regenerated += count($newUrls);
                 } catch (\Exception $e) {
-                    $output->writeln(sprintf('<error>Duplicated url for store ID %d, product %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $storeId, $product->getId(), $product->getSku(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
+                    $output->writeln(sprintf('<error>Duplicated url for store ID %d, product %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $store->getId(), $product->getId(), $product->getSku(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
                 }
             }
             $output->writeln('Done regenerating. Regenerated ' . $regenerated . ' urls for store ' . $store->getName());
