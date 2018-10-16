@@ -10,10 +10,11 @@ Using Composer;
 
 ```sh
 composer require elgentos/regenerate-catalog-urls
+php bin/magento module:enable Iazel_RegenProductUrl
 php bin/magento setup:upgrade
 ```
 
-Or download and copy the `Iazel` directory into `app/code/` and run `php bin/magento setup:upgrade`.
+Or download and copy the `Iazel` directory into `app/code/`, enable the module and run `php bin/magento setup:upgrade`.
 
 # How to use
 ```
@@ -34,7 +35,7 @@ Options:
 Eg:
 ```sh
 # Regenerate url for all products and the global store
-php bin/magento regenerate:product
+php bin/magento regenerate:product:url
 
 # Regenerate url for products with id (1, 2, 3, 4) for store 1
 php bin/magento regenerate:product:url -s1 1 2 3 4
