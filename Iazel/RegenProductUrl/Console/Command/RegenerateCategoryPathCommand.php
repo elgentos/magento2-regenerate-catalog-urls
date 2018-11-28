@@ -20,17 +20,17 @@ use Magento\Framework\App\State;
 class RegenerateCategoryPathCommand extends Command
 {
     /**
-     * @var CategoryUrlPathGenerator
+     * @var CategoryUrlPathGenerator\Proxy
      */
     protected $categoryUrlPathGenerator;
 
     /**
-     * @var UrlPersistInterface
+     * @var UrlPersistInterface\Proxy
      */
     protected $urlPersist;
 
     /**
-     * @var CategoryRepositoryInterface
+     * @var CategoryRepositoryInterface\Proxy
      */
     protected $collection;
 
@@ -40,41 +40,41 @@ class RegenerateCategoryPathCommand extends Command
     protected $state;
 
     /**
-     * @var CategoryCollectionFactory
+     * @var CategoryCollectionFactory\Proxy
      */
     private $categoryCollectionFactory;
     /**
-     * @var EventManager
+     * @var EventManager\Proxy
      */
     private $eventManager;
     /**
-     * @var CategoryResource
+     * @var CategoryResource\Proxy
      */
     private $categoryResource;
     /**
-     * @var Emulation
+     * @var Emulation\Proxy
      */
     private $emulation;
 
     /**
      * RegenerateCategoryPathCommand constructor.
      * @param State $state
-     * @param CategoryCollectionFactory $categoryCollectionFactory
-     * @param CategoryUrlPathGenerator $categoryUrlPathGenerator
-     * @param UrlPersistInterface $urlPersist
-     * @param EventManager $eventManager
-     * @param CategoryResource $categoryResource
-     * @param ResourceConnection $resource
-     * @param Emulation $emulation
+     * @param CategoryCollectionFactory\Proxy $categoryCollectionFactory
+     * @param CategoryUrlPathGenerator\Proxy $categoryUrlPathGenerator
+     * @param UrlPersistInterface\Proxy $urlPersist
+     * @param EventManager\Proxy $eventManager
+     * @param CategoryResource\Proxy $categoryResource
+     * @param ResourceConnection\Proxy $resource
+     * @param Emulation\Proxy $emulation
      */
     public function __construct(
         State $state,
-        CategoryCollectionFactory $categoryCollectionFactory,
-        CategoryUrlPathGenerator $categoryUrlPathGenerator,
-        UrlPersistInterface $urlPersist,
-        EventManager $eventManager,
-        CategoryResource $categoryResource,
-        Emulation $emulation
+        CategoryCollectionFactory\Proxy $categoryCollectionFactory,
+        CategoryUrlPathGenerator\Proxy $categoryUrlPathGenerator,
+        UrlPersistInterface\Proxy $urlPersist,
+        EventManager\Proxy $eventManager,
+        CategoryResource\Proxy $categoryResource,
+        Emulation\Proxy $emulation
     ) {
         $this->state = $state;
         $this->categoryUrlPathGenerator = $categoryUrlPathGenerator;

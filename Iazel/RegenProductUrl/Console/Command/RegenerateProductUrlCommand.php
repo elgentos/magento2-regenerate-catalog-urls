@@ -18,17 +18,17 @@ use Magento\Framework\App\State;
 class RegenerateProductUrlCommand extends Command
 {
     /**
-     * @var ProductUrlRewriteGenerator
+     * @var ProductUrlRewriteGenerator\Proxy
      */
     protected $productUrlRewriteGenerator;
 
     /**
-     * @var UrlPersistInterface
+     * @var UrlPersistInterface\Proxy
      */
     protected $urlPersist;
 
     /**
-     * @var Collection
+     * @var Collection\Proxy
      */
     protected $collection;
 
@@ -36,25 +36,26 @@ class RegenerateProductUrlCommand extends Command
      * @var \Magento\Framework\App\State
      */
     protected $state;
+    
     /**
-     * @var StoreManagerInterface
+     * @var StoreManagerInterface\Proxy
      */
     private $storeManager;
 
     /**
      * RegenerateProductUrlCommand constructor.
      * @param State $state
-     * @param Collection $collection
-     * @param ProductUrlRewriteGenerator $productUrlRewriteGenerator
-     * @param UrlPersistInterface $urlPersist
-     * @param StoreManagerInterface $storeManager
+     * @param Collection\Proxy $collection
+     * @param ProductUrlRewriteGenerator\Proxy $productUrlRewriteGenerator
+     * @param UrlPersistInterface\Proxy $urlPersist
+     * @param StoreManagerInterface\Proxy $storeManager
      */
     public function __construct(
         State $state,
-        Collection $collection,
-        ProductUrlRewriteGenerator $productUrlRewriteGenerator,
-        UrlPersistInterface $urlPersist,
-        StoreManagerInterface $storeManager
+        Collection\Proxy $collection,
+        ProductUrlRewriteGenerator\Proxy $productUrlRewriteGenerator,
+        UrlPersistInterface\Proxy $urlPersist,
+        StoreManagerInterface\Proxy $storeManager
     ) {
         $this->state = $state;
         $this->collection = $collection;
