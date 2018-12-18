@@ -129,8 +129,8 @@ class RegenerateCategoryPathCommand extends Command
         {
             $out->writeln('Regenerating urls for ' . $category->getName() . ' (' . $category->getId() . ')');
 
-            $category->setOrigData('url_key', mt_rand(0,1000)); // set url_key in orig data to random value to force regeneration of path
-            $category->setOrigData('url_path', mt_rand(0,1000)); // set url_path in orig data to random value to force regeneration of path for children
+            $category->setOrigData('url_key', mt_rand(1,1000)); // set url_key in orig data to random value to force regeneration of path
+            $category->setOrigData('url_path', mt_rand(1,1000)); // set url_path in orig data to random value to force regeneration of path for children
 
             // Make use of Magento's event for this
             $this->emulation->startEnvironmentEmulation($store_id, Area::AREA_FRONTEND, true);
