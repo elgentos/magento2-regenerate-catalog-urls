@@ -12,6 +12,7 @@
                 <item name="product_url_regeneration_command" xsi:type="object">Iazel\RegenProductUrl\Console\Command\RegenerateProductUrlCommand</item>
                 <item name="category_url_regeneration_command" xsi:type="object">Iazel\RegenProductUrl\Console\Command\RegenerateCategoryUrlCommand</item>
                 <item name="category_path_regeneration_command" xsi:type="object">Iazel\RegenProductUrl\Console\Command\RegenerateCategoryPathCommand</item>
+                <item name="cms_page_url_regeneration_command" xsi:type="object">Iazel\RegenProductUrl\Console\Command\RegenerateCmsPageUrlCommand</item>
             </argument>
         </arguments>
     </type>
