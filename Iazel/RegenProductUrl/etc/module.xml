@@ -1,4 +1,13 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-		<module name="Iazel_RegenProductUrl" setup_version="1.0.0"/>
+		<module name="Iazel_RegenProductUrl" setup_version="1.0.0">
+			<sequence>
+				<module name="Magento_Catalog"/>
+				<module name="Magento_CatalogUrlRewrite"/>
+				<module name="Magento_UrlRewrite"/>
+				<module name="Magento_Store"/>
+				<module name="Magento_Cms"/>
+				<module name="Magento_CmsUrlRewrite"/>
+			</sequence>
+		</module>
 </config>
