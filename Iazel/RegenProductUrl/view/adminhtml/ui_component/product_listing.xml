@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <listingToolbar name="listing_top">
+        <massaction name="listing_massaction"
+                    component="Magento_Ui/js/grid/tree-massactions">
+            <action name="regenerate_url">
+                <settings>
+                    <type>regenerate_url</type>
+                    <label translate="true">Regenerate Url</label>
+                    <url path="regenerate_url/action/product"/>
+                </settings>
+            </action>
+        </massaction>
+    </listingToolbar>
+</listing>

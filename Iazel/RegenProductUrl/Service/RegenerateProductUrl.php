@@ -35,6 +35,11 @@ class RegenerateProductUrl
      * @var StoreManagerInterface\Proxy
      */
     private $storeManager;
+    /**
+     * Counter for amount of urls regenerated.
+     * @var int
+     */
+    private $regeneratedCount = 0;
 
     public function __construct(
         Collection\Proxy $collection,
@@ -58,6 +63,8 @@ class RegenerateProductUrl
     {
         $this->storeManager->getStore($storeId);
 
+        $this->regeneratedCount = 0;
+
         $stores = $this->storeManager->getStores(false);
         foreach ($stores as $store) {
             // If store has been given through option, skip other stores
@@ -76,7 +83,6 @@ class RegenerateProductUrl
 
             $this->collection->addAttributeToSelect(['url_path', 'url_key']);
             $list = $this->collection->load();
-            $regenerated = 0;
 
             /** @var \Magento\Catalog\Model\Product $product */
             foreach ($list as $product) {
@@ -93,18 +99,23 @@ class RegenerateProductUrl
                 $newUrls = $this->urlRewriteGenerator->generate($product);
                 try {
                     $this->urlPersist->replace($newUrls);
-                    $regenerated += count($newUrls);
+                    $this->regeneratedCount += count($newUrls);
                 } catch (\Exception $e) {
                     $this->log(sprintf('<error>Duplicated url for store ID %d, product %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $store->getId(), $product->getId(), $product->getSku(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
                 }
             }
-            $this->log('Done regenerating. Regenerated ' . $regenerated . ' urls for store ' . $store->getName());
+            $this->log('Done regenerating. Regenerated ' . $this->regeneratedCount . ' urls for store ' . $store->getName());
         }
     }
 
     public function setOutput(OutputInterface $output)
     {
         $this->output = $output;
+    }
+
+    public function getRegeneratedCount(): int
+    {
+        return $this->regeneratedCount;
     }
 
     private function log(string $message)
