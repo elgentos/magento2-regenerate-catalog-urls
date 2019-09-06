@@ -62,11 +62,11 @@ class RegenerateProductUrl
     public function execute(array $productIds, int $storeId)
     {
         $this->storeManager->getStore($storeId);
-
         $this->regeneratedCount = 0;
 
         $stores = $this->storeManager->getStores(false);
         foreach ($stores as $store) {
+            $regeneratedForStore = 0;
             // If store has been given through option, skip other stores
             if ($storeId !== Store::DEFAULT_STORE_ID AND (int) $store->getId() !== $storeId) {
                 continue;
@@ -99,12 +99,13 @@ class RegenerateProductUrl
                 $newUrls = $this->urlRewriteGenerator->generate($product);
                 try {
                     $this->urlPersist->replace($newUrls);
-                    $this->regeneratedCount += count($newUrls);
+                    $regeneratedForStore += count($newUrls);
                 } catch (\Exception $e) {
                     $this->log(sprintf('<error>Duplicated url for store ID %d, product %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $store->getId(), $product->getId(), $product->getSku(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
                 }
             }
-            $this->log('Done regenerating. Regenerated ' . $this->regeneratedCount . ' urls for store ' . $store->getName());
+            $this->log('Done regenerating. Regenerated ' . $regeneratedForStore . ' urls for store ' . $store->getName());
+            $this->regeneratedCount += $regeneratedForStore;
         }
     }
 
