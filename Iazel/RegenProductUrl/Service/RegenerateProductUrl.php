@@ -68,7 +68,7 @@ class RegenerateProductUrl
         foreach ($stores as $store) {
             $regeneratedForStore = 0;
             // If store has been given through option, skip other stores
-            if ($storeId !== Store::DEFAULT_STORE_ID AND (int) $store->getId() !== $storeId) {
+            if ($storeId !== Store::DEFAULT_STORE_ID and (int) $store->getId() !== $storeId) {
                 continue;
             }
 
