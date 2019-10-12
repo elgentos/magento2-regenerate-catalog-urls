@@ -3,7 +3,6 @@
 
 namespace Iazel\RegenProductUrl\Console\Command;
 
-
 use Magento\Cms\Model\Page;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollectionFactory;
 use Magento\CmsUrlRewrite\Model\CmsPageUrlRewriteGenerator;

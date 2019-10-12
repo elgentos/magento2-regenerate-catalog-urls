@@ -107,9 +107,9 @@ class RegenerateCategoryPathCommand extends Command
 
     public function execute(InputInterface $inp, OutputInterface $out)
     {
-        try{
+        try {
             $this->state->getAreaCode();
-        }catch ( \Magento\Framework\Exception\LocalizedException $e){
+        } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->state->setAreaCode('adminhtml');
         }
 
@@ -120,17 +120,16 @@ class RegenerateCategoryPathCommand extends Command
             ->addAttributeToSelect(['name', 'url_path', 'url_key']);
 
         $cids = $inp->getArgument('cids');
-        if( !empty($cids) ) {
+        if (!empty($cids)) {
             $categories->addAttributeToFilter('entity_id', ['in' => $cids]);
         }
 
         $regenerated = 0;
-        foreach($categories as $category)
-        {
+        foreach ($categories as $category) {
             $out->writeln('Regenerating urls for ' . $category->getName() . ' (' . $category->getId() . ')');
 
-            $category->setOrigData('url_key', mt_rand(1,1000)); // set url_key in orig data to random value to force regeneration of path
-            $category->setOrigData('url_path', mt_rand(1,1000)); // set url_path in orig data to random value to force regeneration of path for children
+            $category->setOrigData('url_key', mt_rand(1, 1000)); // set url_key in orig data to random value to force regeneration of path
+            $category->setOrigData('url_path', mt_rand(1, 1000)); // set url_path in orig data to random value to force regeneration of path for children
 
             // Make use of Magento's event for this
             $this->emulation->startEnvironmentEmulation($store_id, Area::AREA_FRONTEND, true);

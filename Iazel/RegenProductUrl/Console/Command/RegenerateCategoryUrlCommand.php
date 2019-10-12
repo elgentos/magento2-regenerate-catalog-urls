@@ -96,9 +96,9 @@ class RegenerateCategoryUrlCommand extends Command
 
     public function execute(InputInterface $inp, OutputInterface $out)
     {
-        try{
+        try {
             $this->state->getAreaCode();
-        }catch ( \Magento\Framework\Exception\LocalizedException $e){
+        } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->state->setAreaCode('adminhtml');
         }
 
@@ -110,13 +110,12 @@ class RegenerateCategoryUrlCommand extends Command
             ->addAttributeToSelect(['name', 'url_path', 'url_key']);
 
         $cids = $inp->getArgument('cids');
-        if( !empty($cids) ) {
+        if (!empty($cids)) {
             $categories->addAttributeToFilter('entity_id', ['in' => $cids]);
         }
 
         $regenerated = 0;
-        foreach($categories as $category)
-        {
+        foreach ($categories as $category) {
             $out->writeln('Regenerating urls for ' . $category->getName() . ' (' . $category->getId() . ')');
 
             $this->urlPersist->deleteByData([
@@ -131,8 +130,7 @@ class RegenerateCategoryUrlCommand extends Command
                 $newUrls = $this->filterEmptyRequestPaths($newUrls);
                 $this->urlPersist->replace($newUrls);
                 $regenerated += count($newUrls);
-            }
-            catch(\Exception $e) {
+            } catch (\Exception $e) {
                 $out->writeln(sprintf('<error>Duplicated url for store ID %d, category %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $store_id, $category->getId(), $category->getName(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
             }
         }
@@ -156,5 +154,5 @@ class RegenerateCategoryUrlCommand extends Command
             }
         }
         return $result;
-    }    
+    }
 }
