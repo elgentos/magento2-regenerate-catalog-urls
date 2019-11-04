@@ -90,6 +90,13 @@ class RegenerateCategoryUrlCommand extends Command
                 'Use the specific Store View',
                 Store::DEFAULT_STORE_ID
             )
+            ->addOption(
+                'rootcatid',
+                'r',
+                InputOption::VALUE_OPTIONAL,
+                'Indicate root category id for generate correct URL for categories under other root category that doesn\'t belong to the default category tree.'
+            );
+
         ;
         return parent::configure();
     }
@@ -112,6 +119,19 @@ class RegenerateCategoryUrlCommand extends Command
         $cids = $inp->getArgument('cids');
         if (!empty($cids)) {
             $categories->addAttributeToFilter('entity_id', ['in' => $cids]);
+        }
+
+        /*
+         * When we have more than one category tree and we need the category URLs of that tree to be regenerated,
+         * it is necessary to indicate the root category so that in the url_rewrite table
+         * the entity id points to that of the category of that tree
+         *
+         * example: bin/magento regenerate:category:url -r749 -s29
+         * */
+        if ($inp->hasOption('rootcatid') && !empty($inp->getOption('rootcatid'))) {
+            $rootCatId = $inp->getOption('rootcatid');
+            $out->writeln('TREE CATEGORY FILTER ' . $rootCatId);
+            $categories->addAttributeToFilter('path', ['like' => '%' . $rootCatId . '%']);
         }
 
         $regenerated = 0;

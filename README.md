@@ -21,14 +21,16 @@ Or download and copy the `Iazel` directory into `app/code/`, enable the module a
 Usage:
  regenerate:product:url [-s|--store="..."] [pids1] ... [pidsN]
  regenerate:category:url [-s]--store="..."] [cids1] ... [cidsN]
+ regenerate:category:url [-r]--rootcatid="..."] [-s]--store="..."] [cids1] ... [cidsN] 
  regenerate:category:path [-s]--store="..."] [cids1] ... [cidsN]
-
+ 
 Arguments:
  pids                  Products to regenerate
  cids                  Categories to regenerate
 
 Options:
  --store (-s)          Use the specific Store View (default: 0)
+ --rootcatid (-s)      Use the specific root category id (required by regenerate url category successful from other tree category)
  --help (-h)           Display this help message
 ```
 
