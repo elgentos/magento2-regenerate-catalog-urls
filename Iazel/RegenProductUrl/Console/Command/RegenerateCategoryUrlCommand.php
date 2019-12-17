@@ -107,7 +107,8 @@ class RegenerateCategoryUrlCommand extends Command
 
         $categories = $this->categoryCollectionFactory->create()
             ->setStore($store_id)
-            ->addAttributeToSelect(['name', 'url_path', 'url_key']);
+            ->addAttributeToSelect(['name', 'url_path', 'url_key'])
+            ->addAttributeToFilter('level', ['gt' => 1]);
 
         $cids = $inp->getArgument('cids');
         if (!empty($cids)) {
