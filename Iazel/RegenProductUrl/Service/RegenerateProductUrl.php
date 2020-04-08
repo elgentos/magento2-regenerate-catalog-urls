@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iazel\RegenProductUrl\Service;
 
 use Magento\Catalog\Model\Product\Visibility;
-use Magento\Catalog\Model\ResourceModel\Product\Collection;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogUrlRewrite\Model\ProductUrlRewriteGenerator;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
@@ -20,9 +20,9 @@ class RegenerateProductUrl
      */
     private $output;
     /**
-     * @var Collection\Proxy
+     * @var CollectionFactory
      */
-    private $collection;
+    private $collectionFactory;
     /**
      * @var ProductUrlRewriteGenerator\Proxy
      */
@@ -42,12 +42,12 @@ class RegenerateProductUrl
     private $regeneratedCount = 0;
 
     public function __construct(
-        Collection\Proxy $collection,
+        CollectionFactory $collectionFactory,
         ProductUrlRewriteGenerator\Proxy $urlRewriteGenerator,
         UrlPersistInterface\Proxy $urlPersist,
         StoreManagerInterface\Proxy $storeManager
     ) {
-        $this->collection = $collection;
+        $this->collectionFactory = $collectionFactory;
         $this->urlRewriteGenerator = $urlRewriteGenerator;
         $this->urlPersist = $urlPersist;
         $this->storeManager = $storeManager;
@@ -61,7 +61,6 @@ class RegenerateProductUrl
      */
     public function execute(array $productIds, int $storeId)
     {
-        $this->storeManager->getStore($storeId);
         $this->regeneratedCount = 0;
 
         $stores = $this->storeManager->getStores(false);
@@ -72,9 +71,12 @@ class RegenerateProductUrl
                 continue;
             }
 
+            $this->collection = $this->collectionFactory->create();
             $this->collection
-                ->addStoreFilter($store->getId())
                 ->setStoreId($store->getId())
+                ->addStoreFilter($store->getId())
+                ->addAttributeToSelect('name')
+                ->addFieldToFilter('status', ['eq' => \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED])
                 ->addFieldToFilter('visibility', ['gt' => Visibility::VISIBILITY_NOT_VISIBLE]);
 
             if (!empty($productIds)) {
