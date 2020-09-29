@@ -32,17 +32,17 @@ class RegenerateCmsPageUrlCommand extends Command
     private $emulation;
 
     /**
-     * @var PageCollectionFactory
+     * @var PageCollectionFactory\Proxy
      */
     private $pageCollectionFactory;
 
     /**
-     * @var UrlPersistInterface
+     * @var UrlPersistInterface\Proxy
      */
     private $urlPersist;
 
     /**
-     * @var CmsPageUrlRewriteGenerator
+     * @var CmsPageUrlRewriteGenerator\Proxy
      */
     private $cmsPageUrlRewriteGenerator;
 
@@ -50,17 +50,17 @@ class RegenerateCmsPageUrlCommand extends Command
      * RegenerateCmsPageUrlCommand constructor.
      *
      * @param State $state
-     * @param Emulation $emulation
-     * @param PageCollectionFactory $pageCollectionFactory
-     * @param UrlPersistInterface $urlPersist
-     * @param CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
+     * @param Emulation\Proxy $emulation
+     * @param PageCollectionFactory\Proxy $pageCollectionFactory
+     * @param UrlPersistInterface\Proxy $urlPersist
+     * @param CmsPageUrlRewriteGenerator\Proxy $cmsPageUrlRewriteGenerator
      */
     public function __construct(
         State $state,
-        Emulation $emulation,
-        PageCollectionFactory $pageCollectionFactory,
-        UrlPersistInterface $urlPersist,
-        CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
+        Emulation\Proxy $emulation,
+        PageCollectionFactory\Proxy $pageCollectionFactory,
+        UrlPersistInterface\Proxy $urlPersist,
+        CmsPageUrlRewriteGenerator\Proxy $cmsPageUrlRewriteGenerator
     ) {
         parent::__construct();
         $this->state = $state;
