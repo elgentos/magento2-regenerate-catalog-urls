@@ -132,8 +132,12 @@ class RegenerateCmsPageUrlCommand extends Command
                 $this->urlPersist->replace($newUrls);
                 $regenerated += count($newUrls);
             } catch (UrlAlreadyExistsException $e) {
-                $output->writeln(sprintf('<error>Url for page %s (%d) already exists.' . PHP_EOL . '%s</error>',
-                    $page->getTitle(), $page->getId(), $e->getMessage()));
+                $output->writeln(sprintf(
+                    '<error>Url for page %s (%d) already exists.' . PHP_EOL . '%s</error>',
+                    $page->getTitle(),
+                    $page->getId(),
+                    $e->getMessage()
+                ));
             } catch (\Exception $e) {
                 $output->writeln(sprintf('<error>Couldn\'t replace url for %s (%d)' . PHP_EOL . '%s</error>'));
             }

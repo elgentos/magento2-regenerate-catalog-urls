@@ -49,7 +49,8 @@ class RegenerateProductUrlCommand extends Command
         $this->setName('regenerate:product:url')
             ->setDescription('Regenerate url for given products')
             ->addOption(
-                'store', 's',
+                'store',
+                's',
                 InputOption::VALUE_REQUIRED,
                 'Regenerate for one specific store view',
                 Store::DEFAULT_STORE_ID

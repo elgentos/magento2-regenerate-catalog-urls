@@ -96,7 +96,8 @@ class RegenerateCategoryPathCommand extends Command
                 'Categories to regenerate'
             )
             ->addOption(
-                'store', 's',
+                'store',
+                's',
                 InputOption::VALUE_REQUIRED,
                 'Use the specific Store View',
                 Store::DEFAULT_STORE_ID
