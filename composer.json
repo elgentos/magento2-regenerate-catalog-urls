@@ -1,26 +1,54 @@
 {
-  "name": "elgentos/regenerate-catalog-urls",
-  "description": "N/A",
-  "require": {
-    "php": "~7.1|~7.2|~7.3",
-    "magento/framework": ">=100.1",
-    "magento/module-catalog-url-rewrite": ">=100.1",
-    "magento/magento-composer-installer": "*"
-  },
-  "type": "magento2-module",
-  "license": [
-    "OSL-3.0",
-    "AFL-3.0"
-  ],
-  "autoload": {
-    "files": [
-      "Iazel/RegenProductUrl/registration.php"
+    "name": "elgentos/regenerate-catalog-urls",
+    "description": "N/A",
+    "require": {
+        "php": "~7.1|~7.2|~7.3",
+        "magento/framework": "^100.1|^101.0|^102.0|^103.0",
+        "magento/module-catalog-url-rewrite": "^100.1",
+        "magento/module-url-rewrite": "^102.0"
+    },
+    "repositories": {
+        "magento": {
+            "type": "composer",
+            "url": "https://repo.magento.com/"
+        }
+    },
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
     ],
-    "psr-4": {
-      "Iazel\\RegenProductUrl\\": "Iazel/RegenProductUrl"
+    "autoload": {
+        "files": [
+            "Iazel/RegenProductUrl/registration.php"
+        ],
+        "psr-4": {
+            "Iazel\\RegenProductUrl\\": "Iazel/RegenProductUrl"
+        }
+    },
+    "replace": {
+        "iazel/module-regen-product-url": "*"
+    },
+    "require-dev": {
+        "mediact/testing-suite": "^2.9",
+        "mediact/coding-standard-magento2": "@stable"
+    },
+    "archive": {
+        "exclude": [
+            "/.gitignore",
+            "/grumphp.yml",
+            "/pdepend.xml",
+            "/phpstan.neon",
+            "/phpunit.xml",
+            "/phpcs.xml",
+            "/phpmd.xml",
+            "/package.json",
+            "/.eslintrc.json",
+            "/.eslintignore",
+            "/tests"
+        ]
+    },
+    "config": {
+        "sort-packages": true
     }
-  },
-  "replace": {
-    "iazel/module-regen-product-url": "*"
-  }
 }

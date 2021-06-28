@@ -1,15 +1,19 @@
 <?php
+
 namespace Iazel\RegenProductUrl\Console\Command;
 
+use Exception;
+use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Framework\App\Area;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\App\Emulation;
+use Magento\UrlRewrite\Model\UrlPersistInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
-use Magento\UrlRewrite\Model\UrlPersistInterface;
 use Magento\CatalogUrlRewrite\Model\CategoryUrlRewriteGenerator;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Catalog\Model\ResourceModel\Category\Collection;
@@ -19,62 +23,58 @@ use Magento\Framework\App\State;
 class RegenerateCategoryUrlCommand extends Command
 {
     /**
-     * @var CategoryUrlRewriteGenerator\Proxy
+     * @var CategoryUrlRewriteGenerator
      */
     protected $categoryUrlRewriteGenerator;
 
     /**
-     * @var UrlPersistInterface\Proxy
+     * @var UrlPersistInterface
      */
     protected $urlPersist;
 
     /**
-     * @var CategoryRepositoryInterface\Proxy
-     */
-    protected $collection;
-
-    /**
-     * @var \Magento\Framework\App\State
+     * @var State
      */
     protected $state;
-    
+
     /**
-     * @var CategoryCollectionFactory\Proxy
+     * @var CategoryCollectionFactory
      */
     private $categoryCollectionFactory;
-    
+
     /**
-     * @var Emulation\Proxy
+     * @var Emulation
      */
     private $emulation;
 
     /**
      * RegenerateCategoryUrlCommand constructor.
-     * @param State $state
-     * @param Collection\Proxy $collection
-     * @param CategoryUrlRewriteGenerator\Proxy $categoryUrlRewriteGenerator
-     * @param UrlPersistInterface\Proxy $urlPersist
-     * @param CategoryCollectionFactory\Proxy $categoryCollectionFactory
-     * @param Emulation\Proxy $emulation
+     *
+     * @param State                       $state
+     * @param CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator
+     * @param UrlPersistInterface         $urlPersist
+     * @param CategoryCollectionFactory   $categoryCollectionFactory
+     * @param Emulation                   $emulation
      */
     public function __construct(
         State $state,
-        Collection\Proxy $collection,
-        CategoryUrlRewriteGenerator\Proxy $categoryUrlRewriteGenerator,
-        UrlPersistInterface\Proxy $urlPersist,
-        CategoryCollectionFactory\Proxy $categoryCollectionFactory,
-        Emulation\Proxy $emulation
+        CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator,
+        UrlPersistInterface $urlPersist,
+        CategoryCollectionFactory $categoryCollectionFactory,
+        Emulation $emulation
     ) {
-        $this->state = $state;
-        $this->collection = $collection;
+        $this->state                       = $state;
         $this->categoryUrlRewriteGenerator = $categoryUrlRewriteGenerator;
-        $this->urlPersist = $urlPersist;
-        $this->categoryCollectionFactory = $categoryCollectionFactory;
+        $this->urlPersist                  = $urlPersist;
+        $this->categoryCollectionFactory   = $categoryCollectionFactory;
+        $this->emulation                   = $emulation;
 
         parent::__construct();
-        $this->emulation = $emulation;
     }
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this->setName('regenerate:category:url')
@@ -85,24 +85,32 @@ class RegenerateCategoryUrlCommand extends Command
                 'Categories to regenerate'
             )
             ->addOption(
-                'store', 's',
+                'store',
+                's',
                 InputOption::VALUE_REQUIRED,
                 'Use the specific Store View',
                 Store::DEFAULT_STORE_ID
-            )
-        ;
-        return parent::configure();
+            );
+
+        parent::configure();
     }
 
-    public function execute(InputInterface $inp, OutputInterface $out)
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return void|int
+     * @throws LocalizedException
+     */
+    public function execute(InputInterface $input, OutputInterface $output)
     {
         try {
             $this->state->getAreaCode();
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+        } catch (LocalizedException $e) {
             $this->state->setAreaCode('adminhtml');
         }
 
-        $store_id = $inp->getOption('store');
+        $store_id = $input->getOption('store');
         $this->emulation->startEnvironmentEmulation($store_id, Area::AREA_FRONTEND, true);
 
         $categories = $this->categoryCollectionFactory->create()
@@ -110,50 +118,74 @@ class RegenerateCategoryUrlCommand extends Command
             ->addAttributeToSelect(['name', 'url_path', 'url_key'])
             ->addAttributeToFilter('level', ['gt' => 1]);
 
-        $cids = $inp->getArgument('cids');
-        if (!empty($cids)) {
-            $categories->addAttributeToFilter('entity_id', ['in' => $cids]);
+        $categoryIds = $input->getArgument('categoryIds');
+
+        if (!empty($categoryIds)) {
+            $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
         }
 
-        $regenerated = 0;
-        foreach ($categories as $category) {
-            $out->writeln('Regenerating urls for ' . $category->getName() . ' (' . $category->getId() . ')');
+        $counter = 0;
 
-            $this->urlPersist->deleteByData([
-                UrlRewrite::ENTITY_ID => $category->getId(),
-                UrlRewrite::ENTITY_TYPE => CategoryUrlRewriteGenerator::ENTITY_TYPE,
-                UrlRewrite::REDIRECT_TYPE => 0,
-                UrlRewrite::STORE_ID => $store_id
-            ]);
+        foreach ($categories as $category) {
+            $output->writeln(
+                sprintf('Regenerating urls for %s (%s)', $category->getName(), $category->getId())
+            );
+
+            $this->urlPersist->deleteByData(
+                [
+                    UrlRewrite::ENTITY_ID => $category->getId(),
+                    UrlRewrite::ENTITY_TYPE => CategoryUrlRewriteGenerator::ENTITY_TYPE,
+                    UrlRewrite::REDIRECT_TYPE => 0,
+                    UrlRewrite::STORE_ID => $store_id
+                ]
+            );
 
             $newUrls = $this->categoryUrlRewriteGenerator->generate($category);
+
             try {
                 $newUrls = $this->filterEmptyRequestPaths($newUrls);
                 $this->urlPersist->replace($newUrls);
-                $regenerated += count($newUrls);
-            } catch (\Exception $e) {
-                $out->writeln(sprintf('<error>Duplicated url for store ID %d, category %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $store_id, $category->getId(), $category->getName(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
+                $counter += count($newUrls);
+            } catch (Exception $e) {
+                $output->writeln(
+                    sprintf(
+                        '<error>Duplicated url for store ID %d, category %d (%s) - %s Generated URLs:' .
+                            PHP_EOL . '%s</error>' . PHP_EOL,
+                        $store_id,
+                        $category->getId(),
+                        $category->getName(),
+                        $e->getMessage(),
+                        implode(PHP_EOL, array_keys($newUrls))
+                    )
+                );
             }
         }
+
         $this->emulation->stopEnvironmentEmulation();
-        $out->writeln('Done regenerating. Regenerated ' . $regenerated . ' urls');
+        $output->writeln(
+            sprintf('Done regenerating. Regenerated %d urls', $counter)
+        );
     }
-    
+
     /**
      * Remove entries with request_path='' to prevent error 404 for "http://site.com/" address.
      *
-     * @param \Magento\UrlRewrite\Service\V1\Data\UrlRewrite[] $newUrls
-     * @return \Magento\UrlRewrite\Service\V1\Data\UrlRewrite[]
+     * @param UrlRewrite[] $newUrls
+     *
+     * @return UrlRewrite[]
      */
-    private function filterEmptyRequestPaths($newUrls)
+    private function filterEmptyRequestPaths(array $newUrls): array
     {
         $result = [];
+
         foreach ($newUrls as $key => $url) {
             $requestPath = $url->getRequestPath();
+
             if (!empty($requestPath)) {
                 $result[$key] = $url;
             }
         }
+
         return $result;
     }
 }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Iazel\RegenProductUrl\Service;
 
+use Exception;
+use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogUrlRewrite\Model\ProductUrlRewriteGenerator;
@@ -19,109 +22,162 @@ class RegenerateProductUrl
      * @var OutputInterface|null
      */
     private $output;
+
     /**
      * @var CollectionFactory
      */
     private $collectionFactory;
+
     /**
-     * @var ProductUrlRewriteGenerator\Proxy
+     * @var ProductUrlRewriteGenerator
      */
     private $urlRewriteGenerator;
+
     /**
-     * @var UrlPersistInterface\Proxy
+     * @var UrlPersistInterface
      */
     private $urlPersist;
+
     /**
-     * @var StoreManagerInterface\Proxy
+     * @var StoreManagerInterface
      */
     private $storeManager;
+
     /**
      * Counter for amount of urls regenerated.
      * @var int
      */
     private $regeneratedCount = 0;
 
+    /**
+     * Constructor.
+     *
+     * @param CollectionFactory          $collectionFactory
+     * @param ProductUrlRewriteGenerator $urlRewriteGenerator
+     * @param UrlPersistInterface        $urlPersist
+     * @param StoreManagerInterface      $storeManager
+     */
     public function __construct(
         CollectionFactory $collectionFactory,
-        ProductUrlRewriteGenerator\Proxy $urlRewriteGenerator,
-        UrlPersistInterface\Proxy $urlPersist,
-        StoreManagerInterface\Proxy $storeManager
+        ProductUrlRewriteGenerator $urlRewriteGenerator,
+        UrlPersistInterface $urlPersist,
+        StoreManagerInterface $storeManager
     ) {
-        $this->collectionFactory = $collectionFactory;
+        $this->collectionFactory   = $collectionFactory;
         $this->urlRewriteGenerator = $urlRewriteGenerator;
-        $this->urlPersist = $urlPersist;
-        $this->storeManager = $storeManager;
+        $this->urlPersist          = $urlPersist;
+        $this->storeManager        = $storeManager;
     }
 
     /**
      * @param int[] $productIds
-     * @param int $storeId
+     * @param int   $storeId
+     *
      * @return void
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function execute(array $productIds, int $storeId)
+    public function execute(array $productIds, int $storeId): void
     {
         $this->regeneratedCount = 0;
+        $stores                 = $this->storeManager->getStores(false);
 
-        $stores = $this->storeManager->getStores(false);
         foreach ($stores as $store) {
             $regeneratedForStore = 0;
+
             // If store has been given through option, skip other stores
             if ($storeId !== Store::DEFAULT_STORE_ID and (int) $store->getId() !== $storeId) {
                 continue;
             }
 
-            $this->collection = $this->collectionFactory->create();
-            $this->collection
+            $collection = $this->collectionFactory->create();
+            $collection
                 ->setStoreId($store->getId())
                 ->addStoreFilter($store->getId())
                 ->addAttributeToSelect('name')
-                ->addFieldToFilter('status', ['eq' => \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED])
+                ->addFieldToFilter('status', ['eq' => Status::STATUS_ENABLED])
                 ->addFieldToFilter('visibility', ['gt' => Visibility::VISIBILITY_NOT_VISIBLE]);
 
             if (!empty($productIds)) {
-                $this->collection->addIdFilter($productIds);
+                $collection->addIdFilter($productIds);
             }
 
-            $this->collection->addAttributeToSelect(['url_path', 'url_key']);
-            $list = $this->collection->load();
+            $collection->addAttributeToSelect(['url_path', 'url_key']);
+            $list = $collection->load();
 
-            /** @var \Magento\Catalog\Model\Product $product */
+            /** @var Product $product */
             foreach ($list as $product) {
-                $this->log('Regenerating urls for ' . $product->getSku() . ' (' . $product->getId() . ') in store ' . $store->getName());
+                $this->log(
+                    sprintf(
+                        'Regenerating urls for %s (%s) in store (%s)',
+                        $product->getSku(),
+                        $product->getId(),
+                        $store->getName()
+                    )
+                );
                 $product->setStoreId($store->getId());
 
-                $this->urlPersist->deleteByData([
-                    UrlRewrite::ENTITY_ID => $product->getId(),
-                    UrlRewrite::ENTITY_TYPE => ProductUrlRewriteGenerator::ENTITY_TYPE,
-                    UrlRewrite::REDIRECT_TYPE => 0,
-                    UrlRewrite::STORE_ID => $store->getId()
-                ]);
+                $this->urlPersist->deleteByData(
+                    [
+                        UrlRewrite::ENTITY_ID => $product->getId(),
+                        UrlRewrite::ENTITY_TYPE => ProductUrlRewriteGenerator::ENTITY_TYPE,
+                        UrlRewrite::REDIRECT_TYPE => 0,
+                        UrlRewrite::STORE_ID => $store->getId()
+                    ]
+                );
 
                 $newUrls = $this->urlRewriteGenerator->generate($product);
                 try {
                     $this->urlPersist->replace($newUrls);
                     $regeneratedForStore += count($newUrls);
-                } catch (\Exception $e) {
-                    $this->log(sprintf('<error>Duplicated url for store ID %d, product %d (%s) - %s Generated URLs:' . PHP_EOL . '%s</error>' . PHP_EOL, $store->getId(), $product->getId(), $product->getSku(), $e->getMessage(), implode(PHP_EOL, array_keys($newUrls))));
+                } catch (Exception $e) {
+                    $this->log(
+                        sprintf(
+                            '<error>Duplicated url for store ID %d, product %d (%s) - %s Generated URLs:' .
+                                PHP_EOL . '%s</error>' . PHP_EOL,
+                            $store->getId(),
+                            $product->getId(),
+                            $product->getSku(),
+                            $e->getMessage(),
+                            implode(PHP_EOL, array_keys($newUrls))
+                        )
+                    );
                 }
             }
-            $this->log('Done regenerating. Regenerated ' . $regeneratedForStore . ' urls for store ' . $store->getName());
+
+            $this->log(
+                sprintf(
+                    'Done regenerating. Regenerated %d urls for store %s',
+                    $regeneratedForStore,
+                    $store->getName()
+                )
+            );
             $this->regeneratedCount += $regeneratedForStore;
         }
     }
 
-    public function setOutput(OutputInterface $output)
+    /**
+     * @param OutputInterface $output
+     *
+     * @return void
+     */
+    public function setOutput(OutputInterface $output): void
     {
         $this->output = $output;
     }
 
+    /**
+     * @return int
+     */
     public function getRegeneratedCount(): int
     {
         return $this->regeneratedCount;
     }
 
-    private function log(string $message)
+    /**
+     * @param string $message
+     *
+     * @return void
+     */
+    private function log(string $message): void
     {
         if ($this->output !== null) {
             $this->output->writeln($message);
