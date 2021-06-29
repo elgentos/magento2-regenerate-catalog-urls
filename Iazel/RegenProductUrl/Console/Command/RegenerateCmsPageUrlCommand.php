@@ -1,14 +1,15 @@
 <?php
 
-
 namespace Iazel\RegenProductUrl\Console\Command;
 
+use Exception;
 use Magento\Cms\Model\Page;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollectionFactory;
 use Magento\CmsUrlRewrite\Model\CmsPageUrlRewriteGenerator;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\Store;
 use Magento\UrlRewrite\Model\Exception\UrlAlreadyExistsException;
@@ -27,49 +28,53 @@ class RegenerateCmsPageUrlCommand extends Command
     private $state;
 
     /**
-     * @var Emulation\Proxy
+     * @var Emulation
      */
     private $emulation;
 
     /**
-     * @var PageCollectionFactory\Proxy
+     * @var PageCollectionFactory
      */
     private $pageCollectionFactory;
 
     /**
-     * @var UrlPersistInterface\Proxy
+     * @var UrlPersistInterface
      */
     private $urlPersist;
 
     /**
-     * @var CmsPageUrlRewriteGenerator\Proxy
+     * @var CmsPageUrlRewriteGenerator
      */
     private $cmsPageUrlRewriteGenerator;
 
     /**
      * RegenerateCmsPageUrlCommand constructor.
      *
-     * @param State $state
-     * @param Emulation\Proxy $emulation
-     * @param PageCollectionFactory\Proxy $pageCollectionFactory
-     * @param UrlPersistInterface\Proxy $urlPersist
-     * @param CmsPageUrlRewriteGenerator\Proxy $cmsPageUrlRewriteGenerator
+     * @param State                      $state
+     * @param Emulation                  $emulation
+     * @param PageCollectionFactory      $pageCollectionFactory
+     * @param UrlPersistInterface        $urlPersist
+     * @param CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
      */
     public function __construct(
         State $state,
-        Emulation\Proxy $emulation,
-        PageCollectionFactory\Proxy $pageCollectionFactory,
-        UrlPersistInterface\Proxy $urlPersist,
-        CmsPageUrlRewriteGenerator\Proxy $cmsPageUrlRewriteGenerator
+        Emulation $emulation,
+        PageCollectionFactory $pageCollectionFactory,
+        UrlPersistInterface $urlPersist,
+        CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
     ) {
         parent::__construct();
-        $this->state = $state;
-        $this->emulation = $emulation;
-        $this->pageCollectionFactory = $pageCollectionFactory;
-        $this->urlPersist = $urlPersist;
+
+        $this->state                      = $state;
+        $this->emulation                  = $emulation;
+        $this->pageCollectionFactory      = $pageCollectionFactory;
+        $this->urlPersist                 = $urlPersist;
         $this->cmsPageUrlRewriteGenerator = $cmsPageUrlRewriteGenerator;
     }
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this->setName('regenerate:cms-page:url')
@@ -95,18 +100,19 @@ class RegenerateCmsPageUrlCommand extends Command
     }
 
     /**
-     * @param InputInterface $input
+     * @param InputInterface  $input
      * @param OutputInterface $output
      *
-     * @return int|void|null
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return int
+     * @throws LocalizedException
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('<info>Start regenerating urls for CMS pages.</info>');
+
         try {
             $this->state->getAreaCode();
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+        } catch (LocalizedException $e) {
             $this->state->setAreaCode(Area::AREA_ADMINHTML);
         }
 
@@ -124,23 +130,39 @@ class RegenerateCmsPageUrlCommand extends Command
             $pages->addFieldToFilter('page_id', ['in' => $pageIds]);
         }
 
-        $regenerated = 0;
+        $counter = 0;
+
         /** @var Page $page */
         foreach ($pages as $page) {
             $newUrls = $this->cmsPageUrlRewriteGenerator->generate($page);
+
             try {
                 $this->urlPersist->replace($newUrls);
-                $regenerated += count($newUrls);
+                $counter += count($newUrls);
             } catch (UrlAlreadyExistsException $e) {
-                $output->writeln(sprintf('<error>Url for page %s (%d) already exists.' . PHP_EOL . '%s</error>',
-                    $page->getTitle(), $page->getId(), $e->getMessage()));
-            } catch (\Exception $e) {
-                $output->writeln(sprintf('<error>Couldn\'t replace url for %s (%d)' . PHP_EOL . '%s</error>'));
+                $output->writeln(
+                    sprintf(
+                        '<error>Url for page %s (%d) already exists.' . PHP_EOL . '%s</error>',
+                        $page->getTitle(),
+                        $page->getId(),
+                        $e->getMessage()
+                    )
+                );
+            } catch (Exception $e) {
+                $output->writeln(
+                    '<error>Couldn\'t replace url for %s (%d)' . PHP_EOL . '%s</error>'
+                );
             }
         }
 
         $this->emulation->stopEnvironmentEmulation();
-        $output->writeln(sprintf('<info>Finished regenerating. Regenerated %d urls.</info>', $regenerated));
+        $output->writeln(
+            sprintf(
+                '<info>Finished regenerating. Regenerated %d urls.</info>',
+                $counter
+            )
+        );
+
         return Cli::RETURN_SUCCESS;
     }
 }

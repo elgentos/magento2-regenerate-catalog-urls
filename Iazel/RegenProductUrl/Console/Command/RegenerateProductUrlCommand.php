@@ -1,9 +1,11 @@
 <?php
+
 namespace Iazel\RegenProductUrl\Console\Command;
 
 use Iazel\RegenProductUrl\Service\RegenerateProductUrl;
 use Magento\Framework\App\State;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -15,13 +17,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 class RegenerateProductUrlCommand extends Command
 {
     /**
-     * @var \Magento\Framework\App\State
+     * @var State
      */
     private $state;
+
     /**
-     * @var StoreManagerInterface\Proxy
+     * @var StoreManagerInterface
      */
     private $storeManager;
+
     /**
      * @var RegenerateProductUrl
      */
@@ -29,27 +33,31 @@ class RegenerateProductUrlCommand extends Command
 
     /**
      * RegenerateProductUrlCommand constructor.
-     * @param State $state
-     * @param StoreManagerInterface\Proxy $storeManager
-     * @param RegenerateProductUrl $regenerateProductUrl
+     * @param State                 $state
+     * @param StoreManagerInterface $storeManager
+     * @param RegenerateProductUrl  $regenerateProductUrl
      */
     public function __construct(
         State $state,
-        StoreManagerInterface\Proxy $storeManager,
+        StoreManagerInterface $storeManager,
         RegenerateProductUrl $regenerateProductUrl
     ) {
-        $this->state = $state;
-        $this->storeManager = $storeManager;
+        $this->state                = $state;
+        $this->storeManager         = $storeManager;
         $this->regenerateProductUrl = $regenerateProductUrl;
         parent::__construct();
     }
 
-    protected function configure()
+    /**
+     * @return void
+     */
+    protected function configure(): void
     {
         $this->setName('regenerate:product:url')
             ->setDescription('Regenerate url for given products')
             ->addOption(
-                'store', 's',
+                'store',
+                's',
                 InputOption::VALUE_REQUIRED,
                 'Regenerate for one specific store view',
                 Store::DEFAULT_STORE_ID
@@ -62,33 +70,42 @@ class RegenerateProductUrlCommand extends Command
             );
     }
 
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return void|int
+     * @throws LocalizedException
+     */
     public function execute(InputInterface $input, OutputInterface $output)
     {
         try {
             $this->state->getAreaCode();
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+        } catch (LocalizedException $e) {
             $this->state->setAreaCode('adminhtml');
         }
 
         $storeId = $input->getOption('store');
-        $stores = $this->storeManager->getStores(false);
+        $stores  = $this->storeManager->getStores(false);
 
         if (!is_numeric($storeId)) {
             $storeId = $this->getStoreIdByCode($storeId, $stores);
         }
 
-        try {
-            $this->regenerateProductUrl->setOutput($output);
-            $this->regenerateProductUrl->execute($input->getArgument('pids'), (int) $storeId);
-        } catch (NoSuchEntityException $e) {
-            $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
-        }
+        $this->regenerateProductUrl->setOutput($output);
+        $this->regenerateProductUrl->execute($input->getArgument('pids'), (int) $storeId);
     }
 
-    private function getStoreIdByCode($store_id, $stores)
+    /**
+     * @param string           $storeId
+     * @param StoreInterface[] $stores
+     *
+     * @return bool|int
+     */
+    private function getStoreIdByCode(string $storeId, array $stores)
     {
         foreach ($stores as $store) {
-            if ($store->getCode() == $store_id) {
+            if ($store->getCode() == $storeId) {
                 return $store->getId();
             }
         }

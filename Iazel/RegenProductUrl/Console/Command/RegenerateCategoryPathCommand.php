@@ -1,18 +1,20 @@
 <?php
+
 namespace Iazel\RegenProductUrl\Console\Command;
 
+use Iazel\RegenProductUrl\Model\CategoryUrlPathGenerator;
+use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Model\ResourceModel\Category as CategoryResource;
 use Magento\Framework\App\Area;
-use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\EntityManager\EventManager;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\App\Emulation;
+use Magento\UrlRewrite\Model\UrlPersistInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Magento\UrlRewrite\Model\UrlPersistInterface;
-use Magento\CatalogUrlRewrite\Model\CategoryUrlPathGenerator;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Store\Model\Store;
 use Magento\Framework\App\State;
@@ -20,73 +22,72 @@ use Magento\Framework\App\State;
 class RegenerateCategoryPathCommand extends Command
 {
     /**
-     * @var CategoryUrlPathGenerator\Proxy
+     * @var CategoryUrlPathGenerator
      */
     protected $categoryUrlPathGenerator;
 
     /**
-     * @var UrlPersistInterface\Proxy
+     * @var UrlPersistInterface
      */
     protected $urlPersist;
 
     /**
-     * @var CategoryRepositoryInterface\Proxy
+     * @var CategoryRepositoryInterface
      */
     protected $collection;
 
     /**
-     * @var \Magento\Framework\App\State
+     * @var State
      */
     protected $state;
 
     /**
-     * @var CategoryCollectionFactory\Proxy
+     * @var CategoryCollectionFactory
      */
     private $categoryCollectionFactory;
+
     /**
-     * @var EventManager\Proxy
+     * @var EventManager
      */
     private $eventManager;
+
     /**
-     * @var CategoryResource\Proxy
-     */
-    private $categoryResource;
-    /**
-     * @var Emulation\Proxy
+     * @var Emulation
      */
     private $emulation;
 
     /**
      * RegenerateCategoryPathCommand constructor.
-     * @param State $state
-     * @param CategoryCollectionFactory\Proxy $categoryCollectionFactory
-     * @param CategoryUrlPathGenerator\Proxy $categoryUrlPathGenerator
-     * @param UrlPersistInterface\Proxy $urlPersist
-     * @param EventManager\Proxy $eventManager
-     * @param CategoryResource\Proxy $categoryResource
-     * @param ResourceConnection\Proxy $resource
-     * @param Emulation\Proxy $emulation
+     *
+     * @param State                     $state
+     * @param CategoryCollectionFactory $categoryCollectionFactory
+     * @param CategoryUrlPathGenerator  $categoryUrlPathGenerator
+     * @param UrlPersistInterface       $urlPersist
+     * @param EventManager              $eventManager
+     * @param Emulation                 $emulation
      */
     public function __construct(
         State $state,
-        CategoryCollectionFactory\Proxy $categoryCollectionFactory,
-        CategoryUrlPathGenerator\Proxy $categoryUrlPathGenerator,
-        UrlPersistInterface\Proxy $urlPersist,
-        EventManager\Proxy $eventManager,
-        CategoryResource\Proxy $categoryResource,
-        Emulation\Proxy $emulation
+        CategoryCollectionFactory $categoryCollectionFactory,
+        CategoryUrlPathGenerator $categoryUrlPathGenerator,
+        UrlPersistInterface $urlPersist,
+        EventManager $eventManager,
+        Emulation $emulation
     ) {
-        $this->state = $state;
-        $this->categoryUrlPathGenerator = $categoryUrlPathGenerator;
-        $this->urlPersist = $urlPersist;
-        parent::__construct();
+        $this->state                     = $state;
+        $this->categoryUrlPathGenerator  = $categoryUrlPathGenerator;
+        $this->urlPersist                = $urlPersist;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
-        $this->eventManager = $eventManager;
-        $this->categoryResource = $categoryResource;
-        $this->emulation = $emulation;
+        $this->eventManager              = $eventManager;
+        $this->emulation                 = $emulation;
+
+        parent::__construct();
     }
 
-    protected function configure()
+    /**
+     * @return void
+     */
+    protected function configure(): void
     {
         $this->setName('regenerate:category:path')
             ->setDescription('Regenerate path for given categories')
@@ -96,50 +97,67 @@ class RegenerateCategoryPathCommand extends Command
                 'Categories to regenerate'
             )
             ->addOption(
-                'store', 's',
+                'store',
+                's',
                 InputOption::VALUE_REQUIRED,
                 'Use the specific Store View',
                 Store::DEFAULT_STORE_ID
-            )
-        ;
-        return parent::configure();
+            );
+
+        parent::configure();
     }
 
-    public function execute(InputInterface $inp, OutputInterface $out)
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return void|int
+     * @throws LocalizedException
+     */
+    public function execute(InputInterface $input, OutputInterface $output)
     {
         try {
             $this->state->getAreaCode();
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+        } catch (LocalizedException $e) {
             $this->state->setAreaCode('adminhtml');
         }
 
-        $store_id = $inp->getOption('store');
+        $store_id = $input->getOption('store');
 
         $categories = $this->categoryCollectionFactory->create()
             ->setStore($store_id)
             ->addAttributeToSelect(['name', 'url_path', 'url_key'])
             ->addAttributeToFilter('level', ['gt' => 1]);
 
-        $cids = $inp->getArgument('cids');
-        if (!empty($cids)) {
-            $categories->addAttributeToFilter('entity_id', ['in' => $cids]);
+        $categoryIds = $input->getArgument('categoryIds');
+
+        if (!empty($categoryIds)) {
+            $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
         }
 
-        $regenerated = 0;
-        foreach ($categories as $category) {
-            $out->writeln('Regenerating urls for ' . $category->getName() . ' (' . $category->getId() . ')');
+        $counter = 0;
 
-            $category->setOrigData('url_key', mt_rand(1, 1000)); // set url_key in orig data to random value to force regeneration of path
-            $category->setOrigData('url_path', mt_rand(1, 1000)); // set url_path in orig data to random value to force regeneration of path for children
+        foreach ($categories as $category) {
+            $output->writeln(
+                sprintf('Regenerating urls for %s (%s)', $category->getName(), $category->getId())
+            );
+
+            // set url_key in orig data to random value to force regeneration of path
+            $category->setOrigData('url_key', mt_rand(1, 1000));
+
+            // set url_path in orig data to random value to force regeneration of path for children
+            $category->setOrigData('url_path', mt_rand(1, 1000));
 
             // Make use of Magento's event for this
             $this->emulation->startEnvironmentEmulation($store_id, Area::AREA_FRONTEND, true);
             $this->eventManager->dispatch('regenerate_category_url_path', ['category' => $category]);
             $this->emulation->stopEnvironmentEmulation();
 
-            $regenerated++;
+            $counter++;
         }
 
-        $out->writeln('Done regenerating. Regenerated url paths for ' . $regenerated . ' categories');
+        $output->writeln(
+            sprintf('Done regenerating. Regenerated url paths for %d categories', $counter)
+        );
     }
 }

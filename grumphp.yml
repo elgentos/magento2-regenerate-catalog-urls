@@ -1,0 +1,2 @@
+imports:
+  - resource: 'vendor/mediact/testing-suite/config/default/grumphp.yml'
