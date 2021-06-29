@@ -118,7 +118,7 @@ class RegenerateCategoryUrlCommand extends Command
             ->addAttributeToSelect(['name', 'url_path', 'url_key'])
             ->addAttributeToFilter('level', ['gt' => 1]);
 
-        $categoryIds = $input->getArgument('categoryIds');
+        $categoryIds = $input->getArgument('cids');
 
         if (!empty($categoryIds)) {
             $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
