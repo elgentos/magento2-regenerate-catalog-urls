@@ -59,14 +59,12 @@ class RegenerateProductUrlCommand extends Command
                 'store',
                 's',
                 InputOption::VALUE_REQUIRED,
-                'Regenerate for one specific store view',
-                Store::DEFAULT_STORE_ID
+                'Regenerate for one specific store view'
             )
             ->addArgument(
                 'pids',
                 InputArgument::IS_ARRAY,
-                'Product IDs to regenerate',
-                []
+                'Product IDs to regenerate'
             );
     }
 
@@ -86,6 +84,7 @@ class RegenerateProductUrlCommand extends Command
         }
 
         $storeId = $input->getOption('store');
+
         $stores  = $this->storeManager->getStores(false);
 
         if (!is_numeric($storeId)) {
@@ -93,7 +92,7 @@ class RegenerateProductUrlCommand extends Command
         }
 
         $this->regenerateProductUrl->setOutput($output);
-        $this->regenerateProductUrl->execute($input->getArgument('pids'), (int) $storeId);
+        $this->regenerateProductUrl->execute($input->getArgument('pids'), (int) $storeId, $output->isVerbose());
     }
 
     /**
