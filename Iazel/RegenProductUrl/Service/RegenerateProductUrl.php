@@ -143,13 +143,11 @@ class RegenerateProductUrl
                     if (count($newUrls) >= self::BATCH_SIZE) {
                         $regeneratedForStore += $this->replaceUrls($newUrls);
                     }
-
                 }
 
                 if (count($newUrls)) {
                     $regeneratedForStore += $this->replaceUrls($newUrls, true);
                 }
-
             } catch (Exception $e) {
                 $this->log(
                     sprintf(
