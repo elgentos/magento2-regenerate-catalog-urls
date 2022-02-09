@@ -85,30 +85,29 @@ class RegenerateProductUrlCommand extends Command
 
         $storeId = $input->getOption('store');
 
-        $stores  = $this->storeManager->getStores(false);
-
-        if (!is_numeric($storeId)) {
+        if (!is_null($storeId) && !is_numeric($storeId)) {
             $storeId = $this->getStoreIdByCode($storeId, $stores);
         }
 
         $this->regenerateProductUrl->setOutput($output);
-        $this->regenerateProductUrl->execute($input->getArgument('pids'), (int) $storeId, $output->isVerbose());
+        $this->regenerateProductUrl->execute($input->getArgument('pids'), $storeId, $output->isVerbose());
     }
 
     /**
-     * @param string           $storeId
-     * @param StoreInterface[] $stores
+     * @param string $storeId
      *
-     * @return bool|int
+     * @return null|int
      */
-    private function getStoreIdByCode(string $storeId, array $stores)
+    private function getStoreIdByCode(string $storeId):?int
     {
+        $stores = $this->storeManager->getStores(false);
+
         foreach ($stores as $store) {
             if ($store->getCode() == $storeId) {
-                return $store->getId();
+                return (int)$store->getId();
             }
         }
 
-        return false;
+        return null;
     }
 }
