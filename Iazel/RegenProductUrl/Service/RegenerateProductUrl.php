@@ -103,8 +103,9 @@ class RegenerateProductUrl
                 ->addFieldToFilter('visibility', ['gt' => Visibility::VISIBILITY_NOT_VISIBLE]);
 
             if (!is_null($productIds)) {
-                $collection->addIdFilter($productIds);
+                $productIds = $collection->getAllIds();
             }
+            $collection->addIdFilter($productIds);
 
             $collection->addAttributeToSelect(['url_path', 'url_key']);
 
