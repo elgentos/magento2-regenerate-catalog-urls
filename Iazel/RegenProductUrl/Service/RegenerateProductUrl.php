@@ -85,7 +85,7 @@ class RegenerateProductUrl
     {
         $this->regeneratedCount = 0;
 
-        $stores = is_null($storeId)
+        $stores = !is_null($storeId)
             ? [$this->storeManager->getStore($storeId)]
             : $this->storeManager->getStores(false);
 
