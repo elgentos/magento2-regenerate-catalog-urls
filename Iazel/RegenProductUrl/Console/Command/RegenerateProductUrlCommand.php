@@ -83,25 +83,38 @@ class RegenerateProductUrlCommand extends Command
             $this->state->setAreaCode('adminhtml');
         }
 
-        $storeId = $input->getOption('store');
+        $stores = $this->storeManager->getStores(false);
 
-        if (!is_null($storeId) && !is_numeric($storeId)) {
+        $this->regenerateProductUrl->setOutput($output);
+
+        $storeId = $input->getOption('store');
+        if ($storeId !== 'all' && !is_null($storeId) && !is_numeric($storeId)) {
             $storeId = $this->getStoreIdByCode($storeId, $stores);
         }
 
-        $this->regenerateProductUrl->setOutput($output);
-        $this->regenerateProductUrl->execute($input->getArgument('pids'), $storeId, $output->isVerbose());
+        if (!is_null($storeId) && is_numeric($storeId)) {
+            $this->regenerateProductUrl->execute($input->getArgument('pids'), $storeId, $output->isVerbose());
+            return 0;
+        }
+
+        if ($storeId === 'all') {
+            foreach($stores as $store) {
+                $this->regenerateProductUrl->execute($input->getArgument('pids'), $store->getId(), $output->isVerbose());
+            }
+            return 0;
+        }
+
+        throw new \Exception('No URLs are regenerated - did you pass a store and are you sure the store exists?');
     }
 
     /**
      * @param string $storeId
+     * @param array $stores
      *
      * @return null|int
      */
-    private function getStoreIdByCode(string $storeId):?int
+    private function getStoreIdByCode(string $storeId, array $stores):?int
     {
-        $stores = $this->storeManager->getStores(false);
-
         foreach ($stores as $store) {
             if ($store->getCode() == $storeId) {
                 return (int)$store->getId();
