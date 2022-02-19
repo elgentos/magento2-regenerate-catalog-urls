@@ -98,7 +98,7 @@ class RegenerateProductUrlCommand extends Command
         }
 
         if ($storeId === 'all') {
-            foreach($stores as $store) {
+            foreach ($stores as $store) {
                 $this->regenerateProductUrl->execute($input->getArgument('pids'), $store->getId(), $output->isVerbose());
             }
             return 0;
