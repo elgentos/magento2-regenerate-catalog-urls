@@ -127,8 +127,11 @@ class RegenerateCmsPageUrlCommand extends Command
 
         if (count($input->getArgument('pids')) > 0) {
             $pageIds = $input->getArgument('pids');
-            $pages->addFieldToFilter('page_id', ['in' => $pageIds]);
+        } else {
+            $pageIds = $pages->getAllIds();
         }
+        $pageIds = array_unique($pageIds);
+        $pages->addFieldToFilter('page_id', ['in' => $pageIds]);
 
         $counter = 0;
 
