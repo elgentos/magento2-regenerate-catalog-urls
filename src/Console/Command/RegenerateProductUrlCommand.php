@@ -53,18 +53,16 @@ class RegenerateProductUrlCommand extends AbstractRegenerateCommand
 
         $this->regenerateProductUrl->setOutput($output);
 
-        if (is_numeric($storeId)) {
-            $this->regenerateProductUrl->execute($input->getArgument('pids'), $storeId, $output->isVerbose());
-            return 0;
-        }
-
         if ($storeId === 'all') {
-            foreach ($this->getAllStores() as $store) {
-                $this->regenerateProductUrl->execute($input->getArgument('pids'), (int) $store->getId(), $output->isVerbose());
-            }
-            return 0;
+            $stores = array_map(fn($store) => $store->getId(), $this->getAllStores());
+        } else {
+            $stores = [$storeId];
         }
 
-        throw new LocalizedException(__('No URLs are regenerated - did you pass a store and are you sure the store exists?'));
+        foreach ($stores as $storeId) {
+            $this->regenerateProductUrl->execute($input->getArgument('pids'), (int) $storeId, $output->isVerbose());
+        }
+
+        return 0;
     }
 }

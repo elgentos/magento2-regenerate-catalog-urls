@@ -4,25 +4,23 @@ declare(strict_types=1);
 
 namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 
+use Elgentos\RegenerateCatalogUrls\Service\RegenerateProductUrl;
 use Exception;
-use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Framework\App\Area;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\App\Emulation;
+use Magento\Store\Model\StoreManagerInterface;
 use Magento\UrlRewrite\Model\UrlPersistInterface;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
 use Magento\CatalogUrlRewrite\Model\CategoryUrlRewriteGenerator;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
-use Magento\Catalog\Model\ResourceModel\Category\Collection;
-use Magento\Store\Model\Store;
 use Magento\Framework\App\State;
 
-class RegenerateCategoryUrlCommand extends Command
+class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 {
     protected CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator;
 
@@ -34,29 +32,21 @@ class RegenerateCategoryUrlCommand extends Command
 
     private Emulation $emulation;
 
-    /**
-     * RegenerateCategoryUrlCommand constructor.
-     *
-     * @param State                       $state
-     * @param CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator
-     * @param UrlPersistInterface         $urlPersist
-     * @param CategoryCollectionFactory   $categoryCollectionFactory
-     * @param Emulation                   $emulation
-     */
-    public function __construct(
-        State $state,
-        CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator,
-        UrlPersistInterface $urlPersist,
-        CategoryCollectionFactory $categoryCollectionFactory,
-        Emulation $emulation
-    ) {
-        $this->state                       = $state;
+    public function __construct(StoreManagerInterface $storeManager,
+                                State $state,
+                                RegenerateProductUrl $regenerateProductUrl,
+                                QuestionHelper $questionHelper,
+                                CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator,
+                                UrlPersistInterface $urlPersist,
+                                CategoryCollectionFactory $categoryCollectionFactory,
+                                Emulation $emulation
+    )
+    {
+        parent::__construct($storeManager, $state, $regenerateProductUrl, $questionHelper);
         $this->categoryUrlRewriteGenerator = $categoryUrlRewriteGenerator;
-        $this->urlPersist                  = $urlPersist;
-        $this->categoryCollectionFactory   = $categoryCollectionFactory;
-        $this->emulation                   = $emulation;
-
-        parent::__construct();
+        $this->urlPersist = $urlPersist;
+        $this->categoryCollectionFactory = $categoryCollectionFactory;
+        $this->emulation = $emulation;
     }
 
     /**
@@ -70,13 +60,6 @@ class RegenerateCategoryUrlCommand extends Command
                 'cids',
                 InputArgument::IS_ARRAY,
                 'Categories to regenerate'
-            )
-            ->addOption(
-                'store',
-                's',
-                InputOption::VALUE_REQUIRED,
-                'Use the specific Store View',
-                Store::DEFAULT_STORE_ID
             );
 
         parent::configure();
@@ -91,17 +74,21 @@ class RegenerateCategoryUrlCommand extends Command
      */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->input = $input;
+        $this->output = $output;
+
         try {
             $this->state->getAreaCode();
         } catch (LocalizedException $e) {
             $this->state->setAreaCode('adminhtml');
         }
 
-        $store_id = $input->getOption('store');
-        $this->emulation->startEnvironmentEmulation($store_id, Area::AREA_FRONTEND, true);
+        $storeId = $this->getStoreId();
+
+        $this->emulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
 
         $categories = $this->categoryCollectionFactory->create()
-            ->setStore($store_id)
+            ->setStore($storeId)
             ->addAttributeToSelect(['name', 'url_path', 'url_key'])
             ->addAttributeToFilter('level', ['gt' => 1]);
 
@@ -123,7 +110,7 @@ class RegenerateCategoryUrlCommand extends Command
                     UrlRewrite::ENTITY_ID => $category->getId(),
                     UrlRewrite::ENTITY_TYPE => CategoryUrlRewriteGenerator::ENTITY_TYPE,
                     UrlRewrite::REDIRECT_TYPE => 0,
-                    UrlRewrite::STORE_ID => $store_id
+                    UrlRewrite::STORE_ID => $storeId
                 ]
             );
 
@@ -138,7 +125,7 @@ class RegenerateCategoryUrlCommand extends Command
                     sprintf(
                         '<error>Duplicated url for store ID %d, category %d (%s) - %s Generated URLs:' .
                             PHP_EOL . '%s</error>' . PHP_EOL,
-                        $store_id,
+                        $storeId,
                         $category->getId(),
                         $category->getName(),
                         $e->getMessage(),
