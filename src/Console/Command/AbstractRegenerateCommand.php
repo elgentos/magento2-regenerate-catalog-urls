@@ -15,6 +15,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-abstract class AbstractRegenerateCommand extends Command {
-
+abstract class AbstractRegenerateCommand extends Command
+{
 }
