@@ -34,8 +34,7 @@ class RegenerateProductUrlCommand extends AbstractRegenerateCommand
         State                 $state,
         StoreManagerInterface $storeManager,
         RegenerateProductUrl  $regenerateProductUrl
-    )
-    {
+    ) {
         $this->state = $state;
         $this->storeManager = $storeManager;
         $this->regenerateProductUrl = $regenerateProductUrl;
