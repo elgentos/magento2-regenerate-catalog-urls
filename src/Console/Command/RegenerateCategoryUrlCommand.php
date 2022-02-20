@@ -31,16 +31,16 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 
     private Emulation $emulation;
 
-    public function __construct(StoreManagerInterface       $storeManager,
-                                State                       $state,
-                                RegenerateProductUrl        $regenerateProductUrl,
-                                QuestionHelper              $questionHelper,
-                                CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator,
-                                UrlPersistInterface         $urlPersist,
-                                CategoryCollectionFactory   $categoryCollectionFactory,
-                                Emulation                   $emulation
-    )
-    {
+    public function __construct(
+        StoreManagerInterface       $storeManager,
+        State                       $state,
+        RegenerateProductUrl        $regenerateProductUrl,
+        QuestionHelper              $questionHelper,
+        CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator,
+        UrlPersistInterface         $urlPersist,
+        CategoryCollectionFactory   $categoryCollectionFactory,
+        Emulation                   $emulation
+    ) {
         parent::__construct($storeManager, $state, $regenerateProductUrl, $questionHelper);
         $this->categoryUrlRewriteGenerator = $categoryUrlRewriteGenerator;
         $this->urlPersist = $urlPersist;

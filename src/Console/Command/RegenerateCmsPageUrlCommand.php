@@ -32,16 +32,16 @@ class RegenerateCmsPageUrlCommand extends AbstractRegenerateCommand
 
     private CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator;
 
-    public function __construct(StoreManagerInterface      $storeManager,
-                                State                      $state,
-                                RegenerateProductUrl       $regenerateProductUrl,
-                                QuestionHelper             $questionHelper,
-                                Emulation                  $emulation,
-                                PageCollectionFactory      $pageCollectionFactory,
-                                UrlPersistInterface        $urlPersist,
-                                CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
-    )
-    {
+    public function __construct(
+        StoreManagerInterface      $storeManager,
+        State                      $state,
+        RegenerateProductUrl       $regenerateProductUrl,
+        QuestionHelper             $questionHelper,
+        Emulation                  $emulation,
+        PageCollectionFactory      $pageCollectionFactory,
+        UrlPersistInterface        $urlPersist,
+        CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
+    ) {
         parent::__construct($storeManager, $state, $regenerateProductUrl, $questionHelper);
         $this->emulation = $emulation;
         $this->pageCollectionFactory = $pageCollectionFactory;

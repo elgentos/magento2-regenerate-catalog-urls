@@ -27,15 +27,15 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
 
     private Emulation $emulation;
 
-    public function __construct(StoreManagerInterface     $storeManager,
-                                State                     $state,
-                                RegenerateProductUrl      $regenerateProductUrl,
-                                QuestionHelper            $questionHelper,
-                                CategoryCollectionFactory $categoryCollectionFactory,
-                                EventManager              $eventManager,
-                                Emulation                 $emulation
-    )
-    {
+    public function __construct(
+        StoreManagerInterface     $storeManager,
+        State                     $state,
+        RegenerateProductUrl      $regenerateProductUrl,
+        QuestionHelper            $questionHelper,
+        CategoryCollectionFactory $categoryCollectionFactory,
+        EventManager              $eventManager,
+        Emulation                 $emulation
+    ) {
         parent::__construct($storeManager, $state, $regenerateProductUrl, $questionHelper);
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eventManager = $eventManager;
