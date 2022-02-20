@@ -31,7 +31,7 @@ Arguments:
  cids                  Categories to regenerate
 
 Options:
- --store (-s)          Use the specific Store View (default: 0)
+ --store (-s)          Use a specific store (store Id, store code or 'all')
  --help (-h)           Display this help message
 ```
 
@@ -42,6 +42,9 @@ php bin/magento regenerate:product:url
 
 # Regenerate url for products with id (1, 2, 3, 4) for store 1
 php bin/magento regenerate:product:url -s1 1 2 3 4
+
+# Regenerate url for all CMS pages
+php bin/magento regenerate:cms-page:url -s all
 ```
 
 ## FAQ
