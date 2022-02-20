@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 
-use Elgentos\RegenerateCatalogUrls\Service\RegenerateProductUrl;
-use Magento\Framework\App\State;
+use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\LocalizedException;
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 
 class RegenerateProductUrlCommand extends AbstractRegenerateCommand
 {
@@ -49,20 +46,14 @@ class RegenerateProductUrlCommand extends AbstractRegenerateCommand
             $this->state->setAreaCode('adminhtml');
         }
 
-        $storeId = $this->getStoreId();
-
         $this->regenerateProductUrl->setOutput($output);
 
-        if ($storeId === 'all') {
-            $stores = array_map(fn($store) => $store->getId(), $this->getAllStores());
-        } else {
-            $stores = [$storeId];
-        }
+        $stores = $this->getChosenStores();
 
         foreach ($stores as $storeId) {
-            $this->regenerateProductUrl->execute($input->getArgument('pids'), (int) $storeId, $output->isVerbose());
+            $this->regenerateProductUrl->execute($input->getArgument('pids'), (int)$storeId, $output->isVerbose());
         }
 
-        return 0;
+        return Cli::RETURN_SUCCESS;
     }
 }

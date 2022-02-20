@@ -54,27 +54,34 @@ abstract class AbstractRegenerateCommand extends Command
         );
     }
 
-    protected function getStoreId()
+    /**
+     * @throws LocalizedException
+     */
+    protected function getChosenStores()
     {
         $storeInput = $this->input->getOption('store');
-
-        if ($storeInput === 'all') {
-            return $storeInput;
-        }
 
         $storeId = false;
         if (is_numeric($storeInput)) {
             $storeId = (int) $storeInput;
+        } else if ($storeInput === 'all') {
+            $storeId = $storeInput;
         } else if (is_string($storeInput)) {
             $storeId = $this->getStoreIdByCode($storeInput);
         } else if (false === $storeInput) {
             $choices = array_merge(['all'], array_map(fn ($store) => $store->getCode(), $this->getAllStores()));
             $question = new ChoiceQuestion(__('Pick a store')->getText(), $choices, 'all');
             $storeCode = $this->questionHelper->ask($this->input, $this->output, $question);
-            $storeId = $this->getStoreIdByCode($storeCode);
+            $storeId = ($storeCode === 'all' ? 'all' : $this->getStoreIdByCode($storeCode));
         }
 
-        return $storeId;
+        if ($storeId === 'all') {
+            $stores = array_map(fn($store) => $store->getId(), $this->getAllStores());
+        } else {
+            $stores = [$storeId];
+        }
+
+        return $stores;
     }
 
     protected function getAllStores($withDefault = false): array

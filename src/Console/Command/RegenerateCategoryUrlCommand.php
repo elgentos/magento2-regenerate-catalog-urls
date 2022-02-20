@@ -7,6 +7,7 @@ namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 use Elgentos\RegenerateCatalogUrls\Service\RegenerateProductUrl;
 use Exception;
 use Magento\Framework\App\Area;
+use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
@@ -22,24 +23,22 @@ use Magento\Framework\App\State;
 
 class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 {
-    protected CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator;
+    private CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator;
 
-    protected UrlPersistInterface $urlPersist;
-
-    protected State $state;
+    private UrlPersistInterface $urlPersist;
 
     private CategoryCollectionFactory $categoryCollectionFactory;
 
     private Emulation $emulation;
 
-    public function __construct(StoreManagerInterface $storeManager,
-                                State $state,
-                                RegenerateProductUrl $regenerateProductUrl,
-                                QuestionHelper $questionHelper,
+    public function __construct(StoreManagerInterface       $storeManager,
+                                State                       $state,
+                                RegenerateProductUrl        $regenerateProductUrl,
+                                QuestionHelper              $questionHelper,
                                 CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator,
-                                UrlPersistInterface $urlPersist,
-                                CategoryCollectionFactory $categoryCollectionFactory,
-                                Emulation $emulation
+                                UrlPersistInterface         $urlPersist,
+                                CategoryCollectionFactory   $categoryCollectionFactory,
+                                Emulation                   $emulation
     )
     {
         parent::__construct($storeManager, $state, $regenerateProductUrl, $questionHelper);
@@ -66,7 +65,7 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
     }
 
     /**
-     * @param InputInterface  $input
+     * @param InputInterface $input
      * @param OutputInterface $output
      *
      * @return int
@@ -83,64 +82,66 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
             $this->state->setAreaCode('adminhtml');
         }
 
-        $storeId = $this->getStoreId();
-
-        $this->emulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
-
-        $categories = $this->categoryCollectionFactory->create()
-            ->setStore($storeId)
-            ->addAttributeToSelect(['name', 'url_path', 'url_key'])
-            ->addAttributeToFilter('level', ['gt' => 1]);
-
-        $categoryIds = $input->getArgument('cids');
-
-        if (!empty($categoryIds)) {
-            $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
-        }
-
         $counter = 0;
 
-        foreach ($categories as $category) {
-            $output->writeln(
-                sprintf('Regenerating urls for %s (%s)', $category->getName(), $category->getId())
-            );
+        $stores = $this->getChosenStores();
 
-            $this->urlPersist->deleteByData(
-                [
-                    UrlRewrite::ENTITY_ID => $category->getId(),
-                    UrlRewrite::ENTITY_TYPE => CategoryUrlRewriteGenerator::ENTITY_TYPE,
-                    UrlRewrite::REDIRECT_TYPE => 0,
-                    UrlRewrite::STORE_ID => $storeId
-                ]
-            );
+        foreach ($stores as $storeId) {
+            $this->emulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
 
-            $newUrls = $this->categoryUrlRewriteGenerator->generate($category);
+            $categories = $this->categoryCollectionFactory->create()
+                ->setStore($storeId)
+                ->addAttributeToSelect(['name', 'url_path', 'url_key'])
+                ->addAttributeToFilter('level', ['gt' => 1]);
 
-            try {
-                $newUrls = $this->filterEmptyRequestPaths($newUrls);
-                $this->urlPersist->replace($newUrls);
-                $counter += count($newUrls);
-            } catch (Exception $e) {
-                $output->writeln(
-                    sprintf(
-                        '<error>Duplicated url for store ID %d, category %d (%s) - %s Generated URLs:' .
-                            PHP_EOL . '%s</error>' . PHP_EOL,
-                        $storeId,
-                        $category->getId(),
-                        $category->getName(),
-                        $e->getMessage(),
-                        implode(PHP_EOL, array_keys($newUrls))
-                    )
-                );
+            $categoryIds = $input->getArgument('cids');
+
+            if (!empty($categoryIds)) {
+                $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
             }
-        }
 
-        $this->emulation->stopEnvironmentEmulation();
+            foreach ($categories as $category) {
+                $output->writeln(
+                    sprintf('Regenerating urls for %s (%s)', $category->getName(), $category->getId())
+                );
+
+                $this->urlPersist->deleteByData(
+                    [
+                        UrlRewrite::ENTITY_ID => $category->getId(),
+                        UrlRewrite::ENTITY_TYPE => CategoryUrlRewriteGenerator::ENTITY_TYPE,
+                        UrlRewrite::REDIRECT_TYPE => 0,
+                        UrlRewrite::STORE_ID => $storeId
+                    ]
+                );
+
+                $newUrls = $this->categoryUrlRewriteGenerator->generate($category);
+
+                try {
+                    $newUrls = $this->filterEmptyRequestPaths($newUrls);
+                    $this->urlPersist->replace($newUrls);
+                    $counter += count($newUrls);
+                } catch (Exception $e) {
+                    $output->writeln(
+                        sprintf(
+                            '<error>Duplicated url for store ID %d, category %d (%s) - %s Generated URLs:' .
+                            PHP_EOL . '%s</error>' . PHP_EOL,
+                            $storeId,
+                            $category->getId(),
+                            $category->getName(),
+                            $e->getMessage(),
+                            implode(PHP_EOL, array_keys($newUrls))
+                        )
+                    );
+                }
+            }
+
+            $this->emulation->stopEnvironmentEmulation();
+        }
         $output->writeln(
             sprintf('Done regenerating. Regenerated %d urls', $counter)
         );
 
-        return 0;
+        return Cli::RETURN_SUCCESS;
     }
 
     /**
