@@ -49,8 +49,7 @@ class RegenerateCmsPageUrlCommand extends Command
         PageCollectionFactory      $pageCollectionFactory,
         UrlPersistInterface        $urlPersist,
         CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
-    )
-    {
+    ) {
         parent::__construct();
 
         $this->state = $state;
