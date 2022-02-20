@@ -34,8 +34,7 @@ abstract class AbstractRegenerateCommand extends Command
         State                 $state,
         RegenerateProductUrl  $regenerateProductUrl,
         QuestionHelper        $questionHelper
-    )
-    {
+    ) {
         $this->storeManager = $storeManager;
         $this->state = $state;
         $this->regenerateProductUrl = $regenerateProductUrl;
@@ -68,11 +67,11 @@ abstract class AbstractRegenerateCommand extends Command
         $storeId = false;
         if (is_numeric($storeInput)) {
             $storeId = (int) $storeInput;
-        } else if ($storeInput === 'all') {
+        } elseif ($storeInput === 'all') {
             $storeId = $storeInput;
-        } else if (is_string($storeInput)) {
+        } elseif (is_string($storeInput)) {
             $storeId = $this->getStoreIdByCode($storeInput);
-        } else if (false === $storeInput) {
+        } elseif (false === $storeInput) {
             $choices = array_merge(['all'], array_map(fn ($store) => $store->getCode(), $this->getAllStores()));
             $question = new ChoiceQuestion(__('Pick a store')->getText(), $choices, 'all');
             $storeCode = $this->questionHelper->ask($this->input, $this->output, $question);
@@ -80,7 +79,7 @@ abstract class AbstractRegenerateCommand extends Command
         }
 
         if ($storeId === 'all') {
-            $stores = array_map(fn($store) => $store->getId(), $this->getAllStores());
+            $stores = array_map(fn ($store) => $store->getId(), $this->getAllStores());
         } else {
             $stores = [$storeId];
         }

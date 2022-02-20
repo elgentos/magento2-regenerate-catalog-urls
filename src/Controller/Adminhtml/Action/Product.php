@@ -36,8 +36,7 @@ class Product extends Action
         Filter               $filter,
         RegenerateProductUrl $regenerateProductUrl,
         Context              $context
-    )
-    {
+    ) {
         $this->collectionFactory = $collectionFactory;
         $this->filter = $filter;
         $this->regenerateProductUrl = $regenerateProductUrl;
