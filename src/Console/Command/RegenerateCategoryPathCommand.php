@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 
 use Elgentos\RegenerateCatalogUrls\Model\CategoryUrlPathGenerator;
-use Magento\Catalog\Api\CategoryRepositoryInterface;
-use Magento\Catalog\Model\ResourceModel\Category as CategoryResource;
+use Exception;
 use Magento\Framework\App\Area;
 use Magento\Framework\EntityManager\EventManager;
 use Magento\Framework\Exception\LocalizedException;
@@ -21,40 +22,17 @@ use Magento\Framework\App\State;
 
 class RegenerateCategoryPathCommand extends Command
 {
-    /**
-     * @var CategoryUrlPathGenerator
-     */
-    protected $categoryUrlPathGenerator;
+    protected CategoryUrlPathGenerator $categoryUrlPathGenerator;
 
-    /**
-     * @var UrlPersistInterface
-     */
-    protected $urlPersist;
+    protected UrlPersistInterface $urlPersist;
 
-    /**
-     * @var CategoryRepositoryInterface
-     */
-    protected $collection;
+    protected State $state;
 
-    /**
-     * @var State
-     */
-    protected $state;
+    private CategoryCollectionFactory $categoryCollectionFactory;
 
-    /**
-     * @var CategoryCollectionFactory
-     */
-    private $categoryCollectionFactory;
+    private EventManager $eventManager;
 
-    /**
-     * @var EventManager
-     */
-    private $eventManager;
-
-    /**
-     * @var Emulation
-     */
-    private $emulation;
+    private Emulation $emulation;
 
     /**
      * RegenerateCategoryPathCommand constructor.
@@ -108,11 +86,12 @@ class RegenerateCategoryPathCommand extends Command
     }
 
     /**
-     * @param InputInterface  $input
+     * @param InputInterface $input
      * @param OutputInterface $output
      *
      * @return void|int
      * @throws LocalizedException
+     * @throws Exception
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
@@ -143,10 +122,10 @@ class RegenerateCategoryPathCommand extends Command
             );
 
             // set url_key in orig data to random value to force regeneration of path
-            $category->setOrigData('url_key', mt_rand(1, 1000));
+            $category->setOrigData('url_key', random_int(1, 1000));
 
             // set url_path in orig data to random value to force regeneration of path for children
-            $category->setOrigData('url_path', mt_rand(1, 1000));
+            $category->setOrigData('url_path', random_int(1, 1000));
 
             // Make use of Magento's event for this
             $this->emulation->startEnvironmentEmulation($store_id, Area::AREA_FRONTEND, true);

@@ -15,6 +15,33 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-abstract class AbstractRegenerateCommand extends Command {
+abstract class AbstractRegenerateCommand extends Command
+{
+    protected function configure()
+    {
+        $this->addOption(
+            'store',
+            's',
+            InputOption::VALUE_REQUIRED,
+            'Regenerate for one specific store view'
+        );
+    }
 
+
+    /**
+     * @param string $storeId
+     * @param array $stores
+     *
+     * @return null|int
+     */
+    protected function getStoreIdByCode(string $storeId, array $stores): ?int
+    {
+        foreach ($stores as $store) {
+            if ($store->getCode() === $storeId) {
+                return (int)$store->getId();
+            }
+        }
+
+        return null;
+    }
 }

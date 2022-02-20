@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 
 use Exception;
@@ -22,53 +24,39 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RegenerateCmsPageUrlCommand extends Command
 {
-    /**
-     * @var State
-     */
-    private $state;
+    private State $state;
 
-    /**
-     * @var Emulation
-     */
-    private $emulation;
+    private Emulation $emulation;
 
-    /**
-     * @var PageCollectionFactory
-     */
-    private $pageCollectionFactory;
+    private PageCollectionFactory $pageCollectionFactory;
 
-    /**
-     * @var UrlPersistInterface
-     */
-    private $urlPersist;
+    private UrlPersistInterface $urlPersist;
 
-    /**
-     * @var CmsPageUrlRewriteGenerator
-     */
-    private $cmsPageUrlRewriteGenerator;
+    private CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator;
 
     /**
      * RegenerateCmsPageUrlCommand constructor.
      *
-     * @param State                      $state
-     * @param Emulation                  $emulation
-     * @param PageCollectionFactory      $pageCollectionFactory
-     * @param UrlPersistInterface        $urlPersist
+     * @param State $state
+     * @param Emulation $emulation
+     * @param PageCollectionFactory $pageCollectionFactory
+     * @param UrlPersistInterface $urlPersist
      * @param CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
      */
     public function __construct(
-        State $state,
-        Emulation $emulation,
-        PageCollectionFactory $pageCollectionFactory,
-        UrlPersistInterface $urlPersist,
+        State                      $state,
+        Emulation                  $emulation,
+        PageCollectionFactory      $pageCollectionFactory,
+        UrlPersistInterface        $urlPersist,
         CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
-    ) {
+    )
+    {
         parent::__construct();
 
-        $this->state                      = $state;
-        $this->emulation                  = $emulation;
-        $this->pageCollectionFactory      = $pageCollectionFactory;
-        $this->urlPersist                 = $urlPersist;
+        $this->state = $state;
+        $this->emulation = $emulation;
+        $this->pageCollectionFactory = $pageCollectionFactory;
+        $this->urlPersist = $urlPersist;
         $this->cmsPageUrlRewriteGenerator = $cmsPageUrlRewriteGenerator;
     }
 
@@ -100,7 +88,7 @@ class RegenerateCmsPageUrlCommand extends Command
     }
 
     /**
-     * @param InputInterface  $input
+     * @param InputInterface $input
      * @param OutputInterface $output
      *
      * @return int

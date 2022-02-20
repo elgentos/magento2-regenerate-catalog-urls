@@ -11,47 +11,30 @@ use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogUrlRewrite\Model\ProductUrlRewriteGenerator;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\UrlRewrite\Model\Exception\UrlAlreadyExistsException;
 use Magento\UrlRewrite\Model\UrlPersistInterface;
 use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class RegenerateProductUrl
 {
-    const BATCH_SIZE = 500;
+    public const BATCH_SIZE = 500;
 
-    /**
-     * @var OutputInterface|null
-     */
-    private $output;
+    private ?OutputInterface $output;
 
-    /**
-     * @var CollectionFactory
-     */
-    private $collectionFactory;
+    private CollectionFactory $collectionFactory;
 
-    /**
-     * @var ProductUrlRewriteGenerator
-     */
-    private $urlRewriteGenerator;
+    private ProductUrlRewriteGenerator $urlRewriteGenerator;
 
-    /**
-     * @var UrlPersistInterface
-     */
-    private $urlPersist;
+    private UrlPersistInterface $urlPersist;
 
-    /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
+    private StoreManagerInterface $storeManager;
 
-    /**
-     * Counter for amount of urls regenerated.
-     * @var int
-     */
-    private $regeneratedCount = 0;
+    private int $regeneratedCount = 0;
 
     /**
      * Constructor.
@@ -74,12 +57,12 @@ class RegenerateProductUrl
     }
 
     /**
-     * @param int[]|nul $productIds
-     * @param int|nul $storeId
+     * @param int[]|null $productIds
+     * @param int|null $storeId
      * @param bool $verbose
      *
      * @return void
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function execute(?array $productIds = null, ?int $storeId = null, bool $verbose = false): void
     {
@@ -212,7 +195,7 @@ class RegenerateProductUrl
      * @param bool $last
      *
      * @return int
-     * @throws \Magento\UrlRewrite\Model\Exception\UrlAlreadyExistsException
+     * @throws UrlAlreadyExistsException
      */
     private function replaceUrls(array &$urls, bool $last = false): int
     {
@@ -231,9 +214,9 @@ class RegenerateProductUrl
      * @param StoreInterface $store
      * @param bool $last
      *
-     * @return int
+     * @return void
      */
-    private function deleteUrls(array &$productIds, StoreInterface $store, bool $last = false): int
+    private function deleteUrls(array &$productIds, StoreInterface $store, bool $last = false): void
     {
         $this->log(sprintf('deleteUrls%s batch: %d', $last ? 'last' : '', count($productIds)));
         $this->urlPersist->deleteByData([
@@ -242,9 +225,5 @@ class RegenerateProductUrl
             UrlRewrite::REDIRECT_TYPE => 0,
             UrlRewrite::STORE_ID      => $store->getId()
         ]);
-        $count      = count($productIds);
-        $productIds = [];
-
-        return $count;
     }
 }

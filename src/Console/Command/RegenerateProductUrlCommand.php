@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 
 use Elgentos\RegenerateCatalogUrls\Service\RegenerateProductUrl;
@@ -14,36 +16,28 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class RegenerateProductUrlCommand extends Command
+class RegenerateProductUrlCommand extends AbstractRegenerateCommand
 {
-    /**
-     * @var State
-     */
-    private $state;
+    private State $state;
 
-    /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
+    private StoreManagerInterface $storeManager;
 
-    /**
-     * @var RegenerateProductUrl
-     */
-    private $regenerateProductUrl;
+    private RegenerateProductUrl $regenerateProductUrl;
 
     /**
      * RegenerateProductUrlCommand constructor.
-     * @param State                 $state
+     * @param State $state
      * @param StoreManagerInterface $storeManager
-     * @param RegenerateProductUrl  $regenerateProductUrl
+     * @param RegenerateProductUrl $regenerateProductUrl
      */
     public function __construct(
-        State $state,
+        State                 $state,
         StoreManagerInterface $storeManager,
-        RegenerateProductUrl $regenerateProductUrl
-    ) {
-        $this->state                = $state;
-        $this->storeManager         = $storeManager;
+        RegenerateProductUrl  $regenerateProductUrl
+    )
+    {
+        $this->state = $state;
+        $this->storeManager = $storeManager;
         $this->regenerateProductUrl = $regenerateProductUrl;
         parent::__construct();
     }
@@ -55,12 +49,6 @@ class RegenerateProductUrlCommand extends Command
     {
         $this->setName('regenerate:product:url')
             ->setDescription('Regenerate url for given products')
-            ->addOption(
-                'store',
-                's',
-                InputOption::VALUE_REQUIRED,
-                'Regenerate for one specific store view'
-            )
             ->addArgument(
                 'pids',
                 InputArgument::IS_ARRAY,
@@ -69,10 +57,10 @@ class RegenerateProductUrlCommand extends Command
     }
 
     /**
-     * @param InputInterface  $input
+     * @param InputInterface $input
      * @param OutputInterface $output
      *
-     * @return void|int
+     * @return int
      * @throws LocalizedException
      */
     public function execute(InputInterface $input, OutputInterface $output)
@@ -104,23 +92,6 @@ class RegenerateProductUrlCommand extends Command
             return 0;
         }
 
-        throw new \Exception('No URLs are regenerated - did you pass a store and are you sure the store exists?');
-    }
-
-    /**
-     * @param string $storeId
-     * @param array $stores
-     *
-     * @return null|int
-     */
-    private function getStoreIdByCode(string $storeId, array $stores):?int
-    {
-        foreach ($stores as $store) {
-            if ($store->getCode() == $storeId) {
-                return (int)$store->getId();
-            }
-        }
-
-        return null;
+        throw new LocalizedException(__('No URLs are regenerated - did you pass a store and are you sure the store exists?'));
     }
 }

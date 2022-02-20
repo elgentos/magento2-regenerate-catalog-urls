@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 
 use Exception;
@@ -22,30 +24,15 @@ use Magento\Framework\App\State;
 
 class RegenerateCategoryUrlCommand extends Command
 {
-    /**
-     * @var CategoryUrlRewriteGenerator
-     */
-    protected $categoryUrlRewriteGenerator;
+    protected CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator;
 
-    /**
-     * @var UrlPersistInterface
-     */
-    protected $urlPersist;
+    protected UrlPersistInterface $urlPersist;
 
-    /**
-     * @var State
-     */
-    protected $state;
+    protected State $state;
 
-    /**
-     * @var CategoryCollectionFactory
-     */
-    private $categoryCollectionFactory;
+    private CategoryCollectionFactory $categoryCollectionFactory;
 
-    /**
-     * @var Emulation
-     */
-    private $emulation;
+    private Emulation $emulation;
 
     /**
      * RegenerateCategoryUrlCommand constructor.
@@ -75,7 +62,7 @@ class RegenerateCategoryUrlCommand extends Command
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('regenerate:category:url')
             ->setDescription('Regenerate url for given categories')
@@ -99,10 +86,10 @@ class RegenerateCategoryUrlCommand extends Command
      * @param InputInterface  $input
      * @param OutputInterface $output
      *
-     * @return void|int
+     * @return int
      * @throws LocalizedException
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             $this->state->getAreaCode();
@@ -165,6 +152,8 @@ class RegenerateCategoryUrlCommand extends Command
         $output->writeln(
             sprintf('Done regenerating. Regenerated %d urls', $counter)
         );
+
+        return 0;
     }
 
     /**

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elgentos\RegenerateCatalogUrls\Model;
 
 use Magento\Catalog\Model\Category;
@@ -14,7 +16,7 @@ class CategoryUrlPathGenerator extends \Magento\CatalogUrlRewrite\Model\Category
     protected function isNeedToGenerateUrlPathForParent($category): bool
     {
         /* Force true when command is run from the CLI */
-        if (PHP_SAPI == 'cli') {
+        if (PHP_SAPI === 'cli') {
             return true;
         }
 

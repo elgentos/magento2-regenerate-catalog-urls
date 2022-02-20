@@ -17,37 +17,29 @@ use Magento\Ui\Component\MassAction\Filter;
 
 class Product extends Action
 {
-    /**
-     * @var RegenerateProductUrl
-     */
-    private $regenerateProductUrl;
+    private RegenerateProductUrl $regenerateProductUrl;
 
-    /**
-     * @var Filter
-     */
-    private $filter;
+    private Filter $filter;
 
-    /**
-     * @var CollectionFactory
-     */
-    private $collectionFactory;
+    private CollectionFactory $collectionFactory;
 
     /**
      * Constructor.
      *
-     * @param CollectionFactory    $collectionFactory
-     * @param Filter               $filter
+     * @param CollectionFactory $collectionFactory
+     * @param Filter $filter
      * @param RegenerateProductUrl $regenerateProductUrl
-     * @param Context              $context
+     * @param Context $context
      */
     public function __construct(
-        CollectionFactory $collectionFactory,
-        Filter $filter,
+        CollectionFactory    $collectionFactory,
+        Filter               $filter,
         RegenerateProductUrl $regenerateProductUrl,
-        Context $context
-    ) {
-        $this->collectionFactory    = $collectionFactory;
-        $this->filter               = $filter;
+        Context              $context
+    )
+    {
+        $this->collectionFactory = $collectionFactory;
+        $this->filter = $filter;
         $this->regenerateProductUrl = $regenerateProductUrl;
 
         parent::__construct($context);
@@ -64,11 +56,11 @@ class Product extends Action
     public function execute(): Redirect
     {
         $productIds = $this->getSelectedProductIds();
-        $storeId    = (int) $this->getRequest()->getParam('store', 0);
-        $filters    = $this->getRequest()->getParam('filters', []);
+        $storeId = (int)$this->getRequest()->getParam('store', 0);
+        $filters = $this->getRequest()->getParam('filters', []);
 
         if (isset($filters['store_id'])) {
-            $storeId = (int) $filters['store_id'];
+            $storeId = (int)$filters['store_id'];
         }
 
         try {
