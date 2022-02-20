@@ -4,6 +4,6 @@ use Magento\Framework\Component\ComponentRegistrar;
 
 ComponentRegistrar::register(
     ComponentRegistrar::MODULE,
-    'Iazel_RegenProductUrl',
+    'Elgentos_RegenerateCatalogUrls',
     __DIR__
 );

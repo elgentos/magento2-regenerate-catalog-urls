@@ -1,37 +1,49 @@
 {
     "name": "elgentos/regenerate-catalog-urls",
-    "description": "N/A",
+    "description": "Regenerate Catalog URL Rewrites (products, categories, cms pages)",
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
     "require": {
         "php": "~7.1.3|~7.2|~7.3|~7.4|~8.0|~8.1",
         "magento/framework": "^102.0|^103.0",
         "magento/module-catalog-url-rewrite": "^100.3|^100.4",
         "magento/module-url-rewrite": "^101.1|^102.0"
     },
+    "minimum-stability": "stable",
+    "archive": {
+        "exclude": [
+            "/.gitignore",
+            "/grumphp.yml",
+            "/pdepend.xml",
+            "/phpstan.neon",
+            "/phpunit.xml",
+            "/phpcs.xml",
+            "/phpmd.xml",
+            "/package.json",
+            "/.eslintrc.json",
+            "/.eslintignore",
+            "/tests"
+        ]
+    },
+    "replace": {
+        "iazel/module-regen-product-url": "*"
+    },
+    "suggest": {
+        "baldwin/magento2-module-url-data-integrity-checker": "Magento 2 module which can find potential url related problems in your catalog data",
+        "fisheye/module-url-rewrite-optimiser": "A Magento module that stops URL rewrites with category paths being generated for products when 'Use Categories Path for Product URLs' setting is disabled in config."
+    },
+    "require-dev": {
+        "mediact/testing-suite": "^2.9",
+        "mediact/coding-standard-magento2": "@stable"
+    },
     "repositories": {
         "magento": {
             "type": "composer",
             "url": "https://repo.magento.com/"
         }
-    },
-    "type": "magento2-module",
-    "license": [
-        "OSL-3.0",
-        "AFL-3.0"
-    ],
-    "autoload": {
-        "files": [
-            "Iazel/RegenProductUrl/registration.php"
-        ],
-        "psr-4": {
-            "Iazel\\RegenProductUrl\\": "Iazel/RegenProductUrl"
-        }
-    },
-    "replace": {
-        "iazel/module-regen-product-url": "*"
-    },
-    "require-dev": {
-        "mediact/testing-suite": "^2.9",
-        "mediact/coding-standard-magento2": "@stable"
     },
     "archive": {
         "exclude": [
@@ -50,5 +62,13 @@
     },
     "config": {
         "sort-packages": true
+    },
+    "autoload": {
+        "files": [
+            "src/registration.php"
+        ],
+        "psr-4": {
+            "Elgentos\\RegenerateCatalogUrls\\": "src/"
+        }
     }
 }

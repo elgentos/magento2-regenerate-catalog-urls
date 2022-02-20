@@ -1,8 +1,8 @@
 <?php
 
-namespace Iazel\RegenProductUrl\Console\Command;
+namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 
-use Iazel\RegenProductUrl\Model\CategoryUrlPathGenerator;
+use Elgentos\RegenerateCatalogUrls\Model\CategoryUrlPathGenerator;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Model\ResourceModel\Category as CategoryResource;
 use Magento\Framework\App\Area;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Iazel\RegenProductUrl\Console\Command;
+namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 
 use Exception;
 use Magento\Catalog\Api\CategoryRepositoryInterface;

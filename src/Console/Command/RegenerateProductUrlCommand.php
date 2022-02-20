@@ -1,8 +1,8 @@
 <?php
 
-namespace Iazel\RegenProductUrl\Console\Command;
+namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 
-use Iazel\RegenProductUrl\Service\RegenerateProductUrl;
+use Elgentos\RegenerateCatalogUrls\Service\RegenerateProductUrl;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Api\Data\StoreInterface;

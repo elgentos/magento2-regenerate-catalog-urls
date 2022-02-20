@@ -1,6 +1,6 @@
 <?php
 
-namespace Iazel\RegenProductUrl\Model;
+namespace Elgentos\RegenerateCatalogUrls\Model;
 
 use Magento\Catalog\Model\Category;
 

@@ -3,7 +3,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
     <router id="admin">
         <route id="regenerate_urls" frontName="regenerate_url">
-            <module name="Iazel_RegenProductUrl"/>
+            <module name="Elgentos_RegenerateCatalogUrls"/>
         </route>
     </router>
 </config>

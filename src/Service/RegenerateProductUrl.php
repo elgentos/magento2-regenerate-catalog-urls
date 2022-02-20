@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iazel\RegenProductUrl\Service;
+namespace Elgentos\RegenerateCatalogUrls\Service;
 
 use Exception;
 use Magento\Catalog\Api\Data\ProductInterface;

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iazel\RegenProductUrl\Controller\Adminhtml\Action;
+namespace Elgentos\RegenerateCatalogUrls\Controller\Adminhtml\Action;
 
 use Exception;
-use Iazel\RegenProductUrl\Service\RegenerateProductUrl;
+use Elgentos\RegenerateCatalogUrls\Service\RegenerateProductUrl;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
