@@ -54,7 +54,7 @@ class RegenerateProductUrlCommand extends AbstractRegenerateCommand
         $this->regenerateProductUrl->setOutput($output);
 
         if ($storeId === 'all') {
-            $stores = array_map(fn($store) => $store->getId(), $this->getAllStores());
+            $stores = array_map(fn ($store) => $store->getId(), $this->getAllStores());
         } else {
             $stores = [$storeId];
         }
