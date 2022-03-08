@@ -85,7 +85,7 @@ class RegenerateProductUrl
                 ->addFieldToFilter('status', ['eq' => Status::STATUS_ENABLED])
                 ->addFieldToFilter('visibility', ['gt' => Visibility::VISIBILITY_NOT_VISIBLE]);
 
-            if (!is_null($productIds)) {
+            if (is_null($productIds)) {
                 $productIds = $collection->getAllIds();
             }
             $collection->addIdFilter($productIds);
