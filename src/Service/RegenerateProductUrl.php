@@ -24,7 +24,7 @@ class RegenerateProductUrl
 {
     public const BATCH_SIZE = 500;
 
-    private ?OutputInterface $output;
+    private ?OutputInterface $output = null;
 
     private CollectionFactory $collectionFactory;
 
