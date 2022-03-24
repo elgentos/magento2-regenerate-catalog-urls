@@ -13,6 +13,7 @@ Using Composer;
 
 ```sh
 composer require elgentos/regenerate-catalog-urls
+php bin/magento module:enable Iazel_RegenProductUrl
 php bin/magento setup:upgrade
 ```
 
