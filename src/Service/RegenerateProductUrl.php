@@ -99,11 +99,13 @@ class RegenerateProductUrl
                 $deleteProducts[] = $product->getId();
                 if (count($deleteProducts) >= self::BATCH_SIZE) {
                     $this->deleteUrls($deleteProducts, $store);
+                    $deleteProducts = [];
                 }
             }
 
             if (count($deleteProducts)) {
                 $this->deleteUrls($deleteProducts, $store, true);
+                $deleteProducts = [];
             }
 
             $newUrls = [];
