@@ -15,6 +15,7 @@ use Magento\UrlRewrite\Model\UrlPersistInterface;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
 use Magento\CatalogUrlRewrite\Model\CategoryUrlRewriteGenerator;
@@ -59,6 +60,12 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
                 'cids',
                 InputArgument::IS_ARRAY,
                 'Categories to regenerate'
+            )->addOption(
+                'root',
+                'r',
+                InputOption::VALUE_OPTIONAL,
+                'Regenerate for root category and its children only',
+                false
             );
 
         parent::configure();
@@ -91,12 +98,18 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 
             $categories = $this->categoryCollectionFactory->create()
                 ->setStore($storeId)
-                ->addAttributeToSelect(['name', 'url_path', 'url_key'])
+                ->addAttributeToSelect(['name', 'url_path', 'url_key', 'path'])
                 ->addAttributeToFilter('level', ['gt' => 1]);
 
+            $fromRootId = intval($input->getOption('root')) ?? 0;
             $categoryIds = $input->getArgument('cids');
-
-            if (!empty($categoryIds)) {
+            if ($fromRootId) {
+                //path LIKE '1/rootcategory/%' OR path = '1/rootcategory'
+                $categories->addAttributeToFilter('path', [
+                    'like' => '1/' . $fromRootId . '/%',
+                    '='    => '1/' . $fromRootId
+                ]);
+            } elseif (!empty($categoryIds)) {
                 $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
             }
 

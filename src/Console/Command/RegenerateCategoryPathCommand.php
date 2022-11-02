@@ -15,6 +15,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Framework\App\State;
@@ -53,6 +54,12 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
                 'cids',
                 InputArgument::IS_ARRAY,
                 'Categories to regenerate'
+            )->addOption(
+                'root',
+                'r',
+                InputOption::VALUE_OPTIONAL,
+                'Regenerate for root category and its children only',
+                false
             );
 
         parent::configure();
@@ -82,12 +89,18 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
         foreach ($stores as $storeId) {
             $categories = $this->categoryCollectionFactory->create()
                 ->setStore($storeId)
-                ->addAttributeToSelect(['name', 'url_path', 'url_key'])
+                ->addAttributeToSelect(['name', 'url_path', 'url_key', 'path'])
                 ->addAttributeToFilter('level', ['gt' => 1]);
 
+            $fromRootOnly = intval($input->getOption('root')) ?? 0;
             $categoryIds = $input->getArgument('cids');
-
-            if (!empty($categoryIds)) {
+            if ($fromRootOnly) {
+                //path LIKE '1/rootcategory/%' OR path = '1/rootcategory'
+                $categories->addAttributeToFilter('path', [
+                    'like' => '1/' . $fromRootOnly . '/%',
+                    '='    => '1/' . $fromRootOnly
+                ]);
+            } elseif (!empty($categoryIds)) {
                 $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
             }
 

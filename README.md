@@ -22,8 +22,8 @@ Or download and copy the `src` directory into `app/code/Elgentos/RegenerateCatal
 ```
 Usage:
  regenerate:product:url [-s|--store="..."] [pids1] ... [pidsN]
- regenerate:category:url [-s]--store="..."] [cids1] ... [cidsN]
- regenerate:category:path [-s]--store="..."] [cids1] ... [cidsN]
+ regenerate:category:url [-s]--store="..."] [-r]--root="..."] [cids1] ... [cidsN]
+ regenerate:category:path [-s]--store="..."] [-r]--root="..."] [cids1] ... [cidsN]
  regenerate:cms-page:url [-s]--store="..."] [pids1] ... [pidsN]
 
 Arguments:
@@ -32,6 +32,7 @@ Arguments:
 
 Options:
  --store (-s)          Use a specific store (store Id, store code or 'all')
+ --root (-r)           Regenerate for root category and its children, ignoring cids. 
  --help (-h)           Display this help message
 ```
 
@@ -45,6 +46,9 @@ php bin/magento regenerate:product:url -s1 1 2 3 4
 
 # Regenerate url for all CMS pages
 php bin/magento regenerate:cms-page:url -s all
+
+# Regenerate url for root category 4 and its children for store 1
+php bin/magento regenerate:category:url -s1 -r4
 ```
 
 ## FAQ
