@@ -99,8 +99,7 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
                     'like' => '1/' . $fromRootOnly . '/%',
                     '='    => '1/' . $fromRootOnly
                 ]);
-            }
-            else if (!empty($categoryIds)) {
+            } elseif (!empty($categoryIds)) {
                 $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
             }
 
