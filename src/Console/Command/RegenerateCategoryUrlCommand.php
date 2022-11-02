@@ -59,6 +59,12 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
                 'cids',
                 InputArgument::IS_ARRAY,
                 'Categories to regenerate'
+            )->addOption(
+                'cfromrootid',
+                'r',
+                InputOption::VALUE_OPTIONAL,
+                'Regenerate for root category and its children only',
+                false
             );
 
         parent::configure();
@@ -94,9 +100,16 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
                 ->addAttributeToSelect(['name', 'url_path', 'url_key'])
                 ->addAttributeToFilter('level', ['gt' => 1]);
 
+            $fromRootId = intval($input->getOption('cfromrootid')) ?? 0;
             $categoryIds = $input->getArgument('cids');
-
-            if (!empty($categoryIds)) {
+            if ($fromRootId) {
+                //path LIKE '1/rootcategory/%' OR path = '1/rootcategory'
+                $categories->addAttributeToFilter('path', [
+                    'like' => '1/' . $fromRootId . '/%',
+                    '='    => '1/' . $fromRootId
+                ]);
+            }
+            else if (!empty($categoryIds)) {
                 $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
             }
 
