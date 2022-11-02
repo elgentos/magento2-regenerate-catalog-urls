@@ -54,7 +54,7 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
                 InputArgument::IS_ARRAY,
                 'Categories to regenerate'
             )->addOption(
-                'cfromrootid',
+                'root',
                 'r',
                 InputOption::VALUE_OPTIONAL,
                 'Regenerate for root category and its children only',
@@ -91,7 +91,7 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
                 ->addAttributeToSelect(['name', 'url_path', 'url_key', 'path'])
                 ->addAttributeToFilter('level', ['gt' => 1]);
 
-            $fromRootOnly = intval($input->getOption('cfromrootid')) ?? 0;
+            $fromRootOnly = intval($input->getOption('root')) ?? 0;
             $categoryIds = $input->getArgument('cids');
             if ($fromRootOnly) {
                 //path LIKE '1/rootcategory/%' OR path = '1/rootcategory'
