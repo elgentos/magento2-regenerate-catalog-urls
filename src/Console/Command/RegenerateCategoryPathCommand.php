@@ -53,6 +53,12 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
                 'cids',
                 InputArgument::IS_ARRAY,
                 'Categories to regenerate'
+            )->addOption(
+                'cfromrootid',
+                'r',
+                InputOption::VALUE_OPTIONAL,
+                'Regenerate for root category and its children only',
+                false
             );
 
         parent::configure();
@@ -82,12 +88,19 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
         foreach ($stores as $storeId) {
             $categories = $this->categoryCollectionFactory->create()
                 ->setStore($storeId)
-                ->addAttributeToSelect(['name', 'url_path', 'url_key'])
+                ->addAttributeToSelect(['name', 'url_path', 'url_key', 'path'])
                 ->addAttributeToFilter('level', ['gt' => 1]);
 
+            $fromRootOnly = intval($input->getOption('cfromrootid')) ?? 0;
             $categoryIds = $input->getArgument('cids');
-
-            if (!empty($categoryIds)) {
+            if ($fromRootOnly) {
+                //path LIKE '1/rootcategory/%' OR path = '1/rootcategory'
+                $categories->addAttributeToFilter('path', [
+                    'like' => '1/' . $fromRootOnly . '/%',
+                    '='    => '1/' . $fromRootOnly
+                ]);
+            }
+            else if (!empty($categoryIds)) {
                 $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
             }
 
