@@ -97,7 +97,7 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 
             $categories = $this->categoryCollectionFactory->create()
                 ->setStore($storeId)
-                ->addAttributeToSelect(['name', 'url_path', 'url_key'])
+                ->addAttributeToSelect(['name', 'url_path', 'url_key', 'path'])
                 ->addAttributeToFilter('level', ['gt' => 1]);
 
             $fromRootId = intval($input->getOption('cfromrootid')) ?? 0;
