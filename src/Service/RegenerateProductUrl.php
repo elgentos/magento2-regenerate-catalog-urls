@@ -137,7 +137,7 @@ class RegenerateProductUrl
             } catch (\Magento\UrlRewrite\Model\Exception\UrlAlreadyExistsException $e) {
                 $this->log(sprintf(
                     '<error>Couldn\'t insert duplicate URL rewrites for the following ' .
-                    'products on store ID %d:' . PHP_EOL . '%s</error>',
+                    'products on store ID %d (current batch failed):' . PHP_EOL . '%s</error>',
                     $store->getId(),
                     implode(PHP_EOL, array_map(function ($url) {
                         return sprintf(
