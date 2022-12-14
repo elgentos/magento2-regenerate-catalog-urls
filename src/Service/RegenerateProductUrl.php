@@ -134,6 +134,19 @@ class RegenerateProductUrl
                 if (count($newUrls)) {
                     $regeneratedForStore += $this->replaceUrls($newUrls, true);
                 }
+            } catch (\Magento\UrlRewrite\Model\Exception\UrlAlreadyExistsException $e) {
+                $this->log(sprintf(
+                    '<error>Couldn\'t insert duplicate URL rewrites for the following ' .
+                    'products on store ID %d (current batch failed):' . PHP_EOL . '%s</error>',
+                    $store->getId(),
+                    implode(PHP_EOL, array_map(function ($url) {
+                        return sprintf(
+                            '- Product ID: %d, request path: %s',
+                            $url['entity_id'],
+                            $url['request_path']
+                        );
+                    }, $e->getUrls()))
+                ));
             } catch (Exception $e) {
                 $this->log(
                     sprintf(
