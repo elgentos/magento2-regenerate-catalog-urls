@@ -1,6 +1,22 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Elgentos\RegenerateCatalogUrls\Console\Command\RegenerateCategoryUrlCom mand">
+        <arguments>
+            <argument name="emulation" xsi:type="array">Magento\Store\Model\App\Emulation\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Elgentos\RegenerateCatalogUrls\Console\Command\RegenerateCategoryPathCommand">
+        <arguments>
+            <argument name="emulation" xsi:type="array">Magento\Store\Model\App\Emulation\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Elgentos\RegenerateCatalogUrls\Console\Command\RegenerateCmsPageUrlCommand">
+        <arguments>
+            <argument name="emulation" xsi:type="array">Magento\Store\Model\App\Emulation\Proxy</argument>
+        </arguments>
+    </type>
+
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">
