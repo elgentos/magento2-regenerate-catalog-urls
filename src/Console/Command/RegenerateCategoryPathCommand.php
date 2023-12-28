@@ -35,7 +35,7 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
         QuestionHelper            $questionHelper,
         CategoryCollectionFactory $categoryCollectionFactory,
         EventManager              $eventManager,
-        Emulation                 $emulation
+        Emulation\Proxy           $emulation
     ) {
         parent::__construct($storeManager, $state, $regenerateProductUrl, $questionHelper);
         $this->categoryCollectionFactory = $categoryCollectionFactory;
