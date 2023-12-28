@@ -46,7 +46,7 @@ class RegenerateProductUrl
      */
     public function __construct(
         CollectionFactory $collectionFactory,
-        ProductUrlRewriteGenerator $urlRewriteGenerator,
+        ProductUrlRewriteGenerator\Proxy $urlRewriteGenerator,
         UrlPersistInterface $urlPersist,
         StoreManagerInterface $storeManager
     ) {
