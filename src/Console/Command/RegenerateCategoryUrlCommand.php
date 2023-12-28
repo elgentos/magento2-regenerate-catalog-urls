@@ -40,7 +40,7 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
         CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator,
         UrlPersistInterface         $urlPersist,
         CategoryCollectionFactory   $categoryCollectionFactory,
-        Emulation                   $emulation
+        Emulation\Proxy             $emulation
     ) {
         parent::__construct($storeManager, $state, $regenerateProductUrl, $questionHelper);
         $this->categoryUrlRewriteGenerator = $categoryUrlRewriteGenerator;
