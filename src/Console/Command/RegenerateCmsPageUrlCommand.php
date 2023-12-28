@@ -37,7 +37,7 @@ class RegenerateCmsPageUrlCommand extends AbstractRegenerateCommand
         State                      $state,
         RegenerateProductUrl       $regenerateProductUrl,
         QuestionHelper             $questionHelper,
-        Emulation                  $emulation,
+        Emulation\Proxy            $emulation,
         PageCollectionFactory      $pageCollectionFactory,
         UrlPersistInterface        $urlPersist,
         CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
