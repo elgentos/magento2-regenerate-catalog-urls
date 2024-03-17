@@ -93,7 +93,30 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 
         $stores = $this->getChosenStores();
 
+        $rootIdOption = intval($input->getOption('root')) ?: false;
+
         foreach ($stores as $storeId) {
+            $currentRootId = intval($this->storeManager->getGroup($this->storeManager->getStore($storeId)->getStoreGroupId())->getRootCategoryId());
+            if($rootIdOption !== false) {
+                $fromRootId = $rootIdOption;
+                if($rootIdOption !== $currentRootId) {
+                    $output->writeln(
+                        sprintf('Skipping store %s because its root category id %s, differs from the passed root category %s', $storeId, $currentRootId, $fromRootId)
+                    );
+                    continue;
+                }
+            } else {
+                $fromRootId = $currentRootId;
+            }
+
+            $output->writeln(
+                sprintf('Processing store %s...', $storeId)
+            );
+
+            $rootCategory = $this->categoryCollectionFactory->create()->addAttributeToFilter('entity_id', $fromRootId)->addAttributeToSelect("name")->getFirstItem();
+            if(!$rootCategory->getId()) {
+                throw new \Exception(sprintf("Root category with ID %d, was not found.", $fromRootId));
+            }
             $this->emulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
 
             $categories = $this->categoryCollectionFactory->create()
@@ -101,7 +124,7 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
                 ->addAttributeToSelect(['name', 'url_path', 'url_key', 'path'])
                 ->addAttributeToFilter('level', ['gt' => 1]);
 
-            $fromRootId = intval($input->getOption('root')) ?? 0;
+
             $categoryIds = $input->getArgument('cids');
             if ($fromRootId) {
                 //path LIKE '1/rootcategory/%' OR path = '1/rootcategory'
@@ -115,7 +138,12 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 
             foreach ($categories as $category) {
                 $output->writeln(
-                    sprintf('Regenerating urls for %s (%s)', $category->getName(), $category->getId())
+                    sprintf('Regenerating urls for %s (%s)',
+                        implode('/',  [
+                            $rootCategory->getName(),
+                            ...array_map(fn($category) => $category->getName(), $category->getParentCategories())
+                        ]),
+                        $category->getId())
                 );
 
                 $this->urlPersist->deleteByData(
