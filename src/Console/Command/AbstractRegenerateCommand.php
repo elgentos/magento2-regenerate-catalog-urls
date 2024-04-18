@@ -61,7 +61,7 @@ abstract class AbstractRegenerateCommand extends Command
         $storeInput = $this->input->getOption('store');
 
         if ($this->storeManager->isSingleStoreMode()) {
-            return [0];
+            return [1];
         }
 
         $storeId = false;
