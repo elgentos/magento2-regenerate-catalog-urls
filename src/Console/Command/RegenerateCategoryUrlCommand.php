@@ -132,7 +132,8 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
                     'like' => '1/' . $fromRootId . '/%',
                     '='    => '1/' . $fromRootId
                 ]);
-            } elseif (!empty($categoryIds)) {
+            }
+            if (!empty($categoryIds)) {
                 $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
             }
 
