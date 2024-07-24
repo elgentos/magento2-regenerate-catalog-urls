@@ -215,7 +215,17 @@ class RegenerateProductUrl
     private function replaceUrls(array &$urls, bool $last = false): int
     {
         $this->log(sprintf('replaceUrls%s batch: %d', $last ? ' last' : '', count($urls)));
-        $this->urlPersist->replace($urls);
+
+        foreach ($urls as $url) {
+            try {
+                $this->urlPersist->replace([$url]);
+            } catch (UrlAlreadyExistsException $e) {
+                $this->log(sprintf($e->getMessage(). ' Entity id: %d Request path: %s',
+                    $url->getEntityId(),
+                    $url->getRequestPath()
+                ));
+            }
+        }
         $count = count($urls);
         $urls  = [];
 
