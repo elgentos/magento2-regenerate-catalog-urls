@@ -109,56 +109,29 @@ class RegenerateProductUrl
             }
 
             $newUrls = [];
-            try {
-                /** @var Product $product */
-                foreach ($collection as $product) {
-                    if ($verbose) {
-                        $this->log(
-                            sprintf(
-                                'Regenerating urls for %s (%s) in store (%s)',
-                                $product->getSku(),
-                                $product->getId(),
-                                $store->getName()
-                            )
-                        );
-                    }
-
-                    $product->setStoreId($store->getId());
-
-                    $newUrls = array_merge($newUrls, $this->urlRewriteGenerator->generate($product));
-                    if (count($newUrls) >= self::BATCH_SIZE) {
-                        $regeneratedForStore += $this->replaceUrls($newUrls);
-                    }
+            /** @var Product $product */
+            foreach ($collection as $product) {
+                if ($verbose) {
+                    $this->log(
+                        sprintf(
+                            'Regenerating urls for %s (%s) in store (%s)',
+                            $product->getSku(),
+                            $product->getId(),
+                            $store->getName()
+                        )
+                    );
                 }
 
-                if (count($newUrls)) {
-                    $regeneratedForStore += $this->replaceUrls($newUrls, true);
+                $product->setStoreId($store->getId());
+
+                $newUrls = array_merge($newUrls, $this->urlRewriteGenerator->generate($product));
+                if (count($newUrls) >= self::BATCH_SIZE) {
+                    $regeneratedForStore += $this->replaceUrls($newUrls);
                 }
-            } catch (\Magento\UrlRewrite\Model\Exception\UrlAlreadyExistsException $e) {
-                $this->log(sprintf(
-                    '<error>Couldn\'t insert duplicate URL rewrites for the following ' .
-                    'products on store ID %d (current batch failed):' . PHP_EOL . '%s</error>',
-                    $store->getId(),
-                    implode(PHP_EOL, array_map(function ($url) {
-                        return sprintf(
-                            '- Product ID: %d, request path: %s',
-                            $url['entity_id'],
-                            $url['request_path']
-                        );
-                    }, $e->getUrls()))
-                ));
-            } catch (Exception $e) {
-                $this->log(
-                    sprintf(
-                        '<error>Duplicated url for store ID %d, product %d (%s) - %s Generated URLs:' .
-                        PHP_EOL . '%s</error>' . PHP_EOL,
-                        $store->getId(),
-                        $product->getId(),
-                        $product->getSku(),
-                        $e->getMessage(),
-                        implode(PHP_EOL, array_keys($newUrls))
-                    )
-                );
+            }
+
+            if (count($newUrls)) {
+                $regeneratedForStore += $this->replaceUrls($newUrls, true);
             }
 
             $this->log(
@@ -204,13 +177,10 @@ class RegenerateProductUrl
     }
 
     /**
-     * Add product ulrs
-     *
      * @param array $urls
-     * @param bool $last
+     * @param bool  $last
      *
      * @return int
-     * @throws UrlAlreadyExistsException
      */
     private function replaceUrls(array &$urls, bool $last = false): int
     {
@@ -219,11 +189,14 @@ class RegenerateProductUrl
         foreach ($urls as $url) {
             try {
                 $this->urlPersist->replace([$url]);
-            } catch (UrlAlreadyExistsException $e) {
-                $this->log(sprintf($e->getMessage(). ' Entity id: %d Request path: %s',
-                    $url->getEntityId(),
-                    $url->getRequestPath()
-                ));
+            } catch (\Exception $e) {
+                $this->log(
+                    sprintf(
+                        $e->getMessage() . ' Entity id: %d Request path: %s',
+                        $url->getEntityId(),
+                        $url->getRequestPath()
+                    )
+                );
             }
         }
         $count = count($urls);
@@ -243,7 +216,7 @@ class RegenerateProductUrl
      */
     private function deleteUrls(array &$productIds, StoreInterface $store, bool $last = false): void
     {
-        $this->log(sprintf('deleteUrls%s batch: %d', $last ? 'last' : '', count($productIds)));
+        $this->log(sprintf('deleteUrls%s batch: %d', $last ? ' last' : '', count($productIds)));
         $this->urlPersist->deleteByData([
             UrlRewrite::ENTITY_ID     => $productIds,
             UrlRewrite::ENTITY_TYPE   => ProductUrlRewriteGenerator::ENTITY_TYPE,
