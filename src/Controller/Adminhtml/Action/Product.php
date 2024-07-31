@@ -9,18 +9,25 @@ use Elgentos\RegenerateCatalogUrls\Service\RegenerateProductUrl;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
-use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\Redirect;
-use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Ui\Component\MassAction\Filter;
 
 class Product extends Action
 {
+    /**
+     * @var RegenerateProductUrl
+     */
     private RegenerateProductUrl $regenerateProductUrl;
 
+    /**
+     * @var Filter
+     */
     private Filter $filter;
 
+    /**
+     * @var CollectionFactory
+     */
     private CollectionFactory $collectionFactory;
 
     /**
@@ -32,10 +39,10 @@ class Product extends Action
      * @param Context $context
      */
     public function __construct(
-        CollectionFactory    $collectionFactory,
-        Filter               $filter,
+        CollectionFactory $collectionFactory,
+        Filter $filter,
         RegenerateProductUrl $regenerateProductUrl,
-        Context              $context
+        Context $context
     ) {
         $this->collectionFactory = $collectionFactory;
         $this->filter = $filter;
@@ -84,6 +91,8 @@ class Product extends Action
     }
 
     /**
+     * Get selected Product IDs
+     *
      * @return array
      * @throws LocalizedException
      */

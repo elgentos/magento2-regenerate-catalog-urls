@@ -24,33 +24,55 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RegenerateCmsPageUrlCommand extends AbstractRegenerateCommand
 {
-    private Emulation $emulation;
+    /**
+     * @var ?Emulation
+     */
+    private ?Emulation $emulation = null;
 
+    /**
+     * @var PageCollectionFactory
+     */
     private PageCollectionFactory $pageCollectionFactory;
 
+    /**
+     * @var UrlPersistInterface
+     */
     private UrlPersistInterface $urlPersist;
 
+    /**
+     * @var CmsPageUrlRewriteGenerator
+     */
     private CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator;
 
+    /**
+     * @param StoreManagerInterface $storeManager
+     * @param State $state
+     * @param RegenerateProductUrl $regenerateProductUrl
+     * @param QuestionHelper $questionHelper
+     * @param PageCollectionFactory $pageCollectionFactory
+     * @param UrlPersistInterface $urlPersist
+     * @param CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
+     * @param Emulation $emulation
+     */
     public function __construct(
-        StoreManagerInterface      $storeManager,
-        State                      $state,
-        RegenerateProductUrl       $regenerateProductUrl,
-        QuestionHelper             $questionHelper,
-        Emulation\Proxy            $emulation,
-        PageCollectionFactory      $pageCollectionFactory,
-        UrlPersistInterface        $urlPersist,
-        CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator
+        StoreManagerInterface $storeManager,
+        State $state,
+        RegenerateProductUrl $regenerateProductUrl,
+        QuestionHelper $questionHelper,
+        PageCollectionFactory $pageCollectionFactory,
+        UrlPersistInterface $urlPersist,
+        CmsPageUrlRewriteGenerator $cmsPageUrlRewriteGenerator,
+        Emulation $emulation
     ) {
         parent::__construct($storeManager, $state, $regenerateProductUrl, $questionHelper);
-        $this->emulation = $emulation;
         $this->pageCollectionFactory = $pageCollectionFactory;
         $this->urlPersist = $urlPersist;
         $this->cmsPageUrlRewriteGenerator = $cmsPageUrlRewriteGenerator;
+        $this->emulation = $emulation;
     }
 
     /**
-     * @return void
+     * @inheritdoc
      */
     protected function configure()
     {
@@ -66,11 +88,7 @@ class RegenerateCmsPageUrlCommand extends AbstractRegenerateCommand
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @return int
-     * @throws LocalizedException
+     * @inheritdoc
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

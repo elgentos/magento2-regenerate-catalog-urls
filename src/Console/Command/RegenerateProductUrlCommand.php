@@ -13,7 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class RegenerateProductUrlCommand extends AbstractRegenerateCommand
 {
     /**
-     * @return void
+     * @inheritdoc
      */
     protected function configure(): void
     {
@@ -29,11 +29,7 @@ class RegenerateProductUrlCommand extends AbstractRegenerateCommand
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @return int
-     * @throws LocalizedException
+     * @inheritdoc
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {

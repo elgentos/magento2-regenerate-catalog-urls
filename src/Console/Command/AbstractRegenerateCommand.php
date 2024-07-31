@@ -17,23 +17,49 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 
 abstract class AbstractRegenerateCommand extends Command
 {
+    /**
+     * @var InputInterface
+     */
     protected InputInterface $input;
 
+    /**
+     * @var OutputInterface
+     */
     protected OutputInterface $output;
 
+    /**
+     * @var StoreManagerInterface
+     */
     protected StoreManagerInterface $storeManager;
 
+    /**
+     * @var State
+     */
     protected State $state;
 
+    /**
+     * @var RegenerateProductUrl
+     */
     protected RegenerateProductUrl $regenerateProductUrl;
 
+    /**
+     * @var QuestionHelper
+     */
     protected QuestionHelper $questionHelper;
 
+    /**
+     * Constructor
+     *
+     * @param StoreManagerInterface $storeManager
+     * @param State $state
+     * @param RegenerateProductUrl $regenerateProductUrl
+     * @param QuestionHelper $questionHelper
+     */
     public function __construct(
         StoreManagerInterface $storeManager,
-        State                 $state,
-        RegenerateProductUrl  $regenerateProductUrl,
-        QuestionHelper        $questionHelper
+        State $state,
+        RegenerateProductUrl $regenerateProductUrl,
+        QuestionHelper $questionHelper
     ) {
         $this->storeManager = $storeManager;
         $this->state = $state;
@@ -42,6 +68,9 @@ abstract class AbstractRegenerateCommand extends Command
         parent::__construct();
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function configure()
     {
         $this->addOption(
@@ -54,9 +83,12 @@ abstract class AbstractRegenerateCommand extends Command
     }
 
     /**
+     * Get chosen stores
+     *
+     * @return array
      * @throws LocalizedException
      */
-    protected function getChosenStores()
+    protected function getChosenStores(): array
     {
         $storeInput = $this->input->getOption('store');
 
@@ -66,7 +98,7 @@ abstract class AbstractRegenerateCommand extends Command
 
         $storeId = false;
         if (is_numeric($storeInput)) {
-            $storeId = (int) $storeInput;
+            $storeId = (int)$storeInput;
         } elseif ($storeInput === 'all') {
             $storeId = $storeInput;
         } elseif (is_string($storeInput)) {
@@ -87,12 +119,20 @@ abstract class AbstractRegenerateCommand extends Command
         return $stores;
     }
 
-    protected function getAllStores($withDefault = false): array
+    /**
+     * Get all stores
+     *
+     * @param bool|null $withDefault
+     * @return array
+     */
+    protected function getAllStores(?bool $withDefault = false): array
     {
         return $this->storeManager->getStores($withDefault);
     }
 
     /**
+     * Get Store ID by code
+     *
      * @param string $storeCode
      * @return null|int
      * @throws LocalizedException
@@ -105,6 +145,9 @@ abstract class AbstractRegenerateCommand extends Command
             }
         }
 
-        throw new LocalizedException(__('The store that was requested (%1) wasn\'t found. Verify the store and try again.', $storeCode));
+        throw new LocalizedException(__(
+            'The store that was requested (%1) wasn\'t found. Verify the store and try again.',
+            $storeCode
+        ));
     }
 }
