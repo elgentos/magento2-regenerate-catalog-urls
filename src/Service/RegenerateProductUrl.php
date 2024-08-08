@@ -56,6 +56,11 @@ class RegenerateProductUrl
     private int $regeneratedCount = 0;
 
     /**
+     * @var bool
+     */
+    private bool $isVerboseMode = false;
+
+    /**
      * Constructor.
      *
      * @param CollectionFactory $collectionFactory
@@ -87,11 +92,12 @@ class RegenerateProductUrl
      */
     public function execute(?array $productIds = null, ?int $storeId = null, bool $verbose = false): void
     {
+        $this->isVerboseMode = $verbose;
         $this->regeneratedCount = 0;
 
         $stores = null !== $storeId
             ? [$this->storeManager->getStore($storeId)]
-            : $this->storeManager->getStores(false);
+            : $this->storeManager->getStores();
 
         foreach ($stores as $store) {
             $regeneratedForStore = 0;
@@ -132,7 +138,7 @@ class RegenerateProductUrl
             $newUrls = [];
             /** @var Product $product */
             foreach ($collection as $product) {
-                if ($verbose) {
+                if ($this->isVerboseMode) {
                     $this->log(
                         sprintf(
                             'Regenerating urls for %s (%s) in store (%s)',
@@ -216,19 +222,27 @@ class RegenerateProductUrl
     {
         $this->log(sprintf('replaceUrls%s batch: %d', $last ? ' last' : '', count($urls)));
 
-        foreach ($urls as $url) {
+        if ($this->isVerboseMode) {
+            foreach ($urls as $url) {
+                try {
+                    $this->urlPersist->replace([$url]);
+                } catch (Exception $e) {
+                    $this->log(
+                        sprintf(
+                            $e->getMessage() . ' Entity id: %d Request path: %s',
+                            $url->getEntityId(),
+                            $url->getRequestPath()
+                        )
+                    );
+                }
+            }
+        } else {
             try {
-                $this->urlPersist->replace([$url]);
-            } catch (Exception $e) {
-                $this->log(
-                    sprintf(
-                        $e->getMessage() . ' Entity id: %d Request path: %s',
-                        $url->getEntityId(),
-                        $url->getRequestPath()
-                    )
-                );
+                $this->urlPersist->replace($urls);
+            } catch (Exception $e) {//phpcs:ignore Magento2.CodeAnalysis.EmptyBlock.DetectedCatch
             }
         }
+
         $count = count($urls);
         $urls = [];
 
