@@ -9,6 +9,8 @@ use Magento\Catalog\Model\Category;
 class CategoryUrlPathGenerator extends \Magento\CatalogUrlRewrite\Model\CategoryUrlPathGenerator
 {
     /**
+     * Determine whether generation url path for parent needed
+     *
      * @param Category $category
      *
      * @return bool

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 
 use Elgentos\RegenerateCatalogUrls\Service\RegenerateProductUrl;
-use Exception;
 use Magento\Framework\App\Area;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\EntityManager\EventManager;
@@ -22,20 +21,38 @@ use Magento\Framework\App\State;
 
 class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
 {
+    /**
+     * @var CategoryCollectionFactory
+     */
     private CategoryCollectionFactory $categoryCollectionFactory;
 
+    /**
+     * @var EventManager
+     */
     private EventManager $eventManager;
 
-    private Emulation $emulation;
+    /**
+     * @var ?Emulation
+     */
+    private ?Emulation $emulation = null;
 
+    /**
+     * @param StoreManagerInterface $storeManager
+     * @param State $state
+     * @param RegenerateProductUrl $regenerateProductUrl
+     * @param QuestionHelper $questionHelper
+     * @param CategoryCollectionFactory $categoryCollectionFactory
+     * @param EventManager $eventManager
+     * @param Emulation $emulation
+     */
     public function __construct(
-        StoreManagerInterface     $storeManager,
-        State                     $state,
-        RegenerateProductUrl      $regenerateProductUrl,
-        QuestionHelper            $questionHelper,
+        StoreManagerInterface $storeManager,
+        State $state,
+        RegenerateProductUrl $regenerateProductUrl,
+        QuestionHelper $questionHelper,
         CategoryCollectionFactory $categoryCollectionFactory,
-        EventManager              $eventManager,
-        Emulation\Proxy           $emulation
+        EventManager $eventManager,
+        Emulation $emulation
     ) {
         parent::__construct($storeManager, $state, $regenerateProductUrl, $questionHelper);
         $this->categoryCollectionFactory = $categoryCollectionFactory;
@@ -44,7 +61,7 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
     }
 
     /**
-     * @return void
+     * @inheritdoc
      */
     protected function configure(): void
     {
@@ -66,12 +83,7 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @return int
-     * @throws LocalizedException
-     * @throws Exception
+     * @inheritdoc
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
@@ -92,13 +104,13 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
                 ->addAttributeToSelect(['name', 'url_path', 'url_key', 'path'])
                 ->addAttributeToFilter('level', ['gt' => 1]);
 
-            $fromRootOnly = intval($input->getOption('root')) ?? 0;
+            $fromRootOnly = (int)$input->getOption('root') ?? 0;
             $categoryIds = $input->getArgument('cids');
             if ($fromRootOnly) {
                 //path LIKE '1/rootcategory/%' OR path = '1/rootcategory'
                 $categories->addAttributeToFilter('path', [
                     'like' => '1/' . $fromRootOnly . '/%',
-                    '='    => '1/' . $fromRootOnly
+                    '=' => '1/' . $fromRootOnly
                 ]);
             } elseif (!empty($categoryIds)) {
                 $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);

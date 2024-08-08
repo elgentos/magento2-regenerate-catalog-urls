@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Elgentos\RegenerateCatalogUrls\Service;
 
 use Exception;
-use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
@@ -13,27 +12,47 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogUrlRewrite\Model\ProductUrlRewriteGenerator;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
-use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\UrlRewrite\Model\Exception\UrlAlreadyExistsException;
 use Magento\UrlRewrite\Model\UrlPersistInterface;
 use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class RegenerateProductUrl
 {
+    /**#@+
+     * Constants
+     */
     public const BATCH_SIZE = 500;
+    /**#@-*/
 
+    /**
+     * @var OutputInterface|null
+     */
     private ?OutputInterface $output = null;
 
+    /**
+     * @var CollectionFactory
+     */
     private CollectionFactory $collectionFactory;
 
-    private ProductUrlRewriteGenerator $urlRewriteGenerator;
+    /**
+     * @var ?ProductUrlRewriteGenerator
+     */
+    private ?ProductUrlRewriteGenerator $urlRewriteGenerator = null;
 
+    /**
+     * @var UrlPersistInterface
+     */
     private UrlPersistInterface $urlPersist;
 
+    /**
+     * @var StoreManagerInterface
+     */
     private StoreManagerInterface $storeManager;
 
+    /**
+     * @var int
+     */
     private int $regeneratedCount = 0;
 
     /**
@@ -46,17 +65,19 @@ class RegenerateProductUrl
      */
     public function __construct(
         CollectionFactory $collectionFactory,
-        ProductUrlRewriteGenerator\Proxy $urlRewriteGenerator,
+        ProductUrlRewriteGenerator $urlRewriteGenerator,
         UrlPersistInterface $urlPersist,
         StoreManagerInterface $storeManager
     ) {
-        $this->collectionFactory   = $collectionFactory;
+        $this->collectionFactory = $collectionFactory;
         $this->urlRewriteGenerator = $urlRewriteGenerator;
-        $this->urlPersist          = $urlPersist;
-        $this->storeManager        = $storeManager;
+        $this->urlPersist = $urlPersist;
+        $this->storeManager = $storeManager;
     }
 
     /**
+     * Process
+     *
      * @param int[]|null $productIds
      * @param int|null $storeId
      * @param bool $verbose
@@ -68,7 +89,7 @@ class RegenerateProductUrl
     {
         $this->regeneratedCount = 0;
 
-        $stores = !is_null($storeId)
+        $stores = null !== $storeId
             ? [$this->storeManager->getStore($storeId)]
             : $this->storeManager->getStores(false);
 
@@ -85,7 +106,7 @@ class RegenerateProductUrl
                 ->addFieldToFilter('status', ['eq' => Status::STATUS_ENABLED])
                 ->addFieldToFilter('visibility', ['gt' => Visibility::VISIBILITY_NOT_VISIBLE]);
 
-            if (is_null($productIds) || (is_array($productIds) && empty($productIds))) {
+            if ($productIds == null || (is_array($productIds) && empty($productIds))) {
                 $productIds = $collection->getAllIds();
             }
             $collection->addIdFilter($productIds);
@@ -124,6 +145,7 @@ class RegenerateProductUrl
 
                 $product->setStoreId($store->getId());
 
+                //phpcs:ignore Magento2.Performance.ForeachArrayMerge.ForeachArrayMerge
                 $newUrls = array_merge($newUrls, $this->urlRewriteGenerator->generate($product));
                 if (count($newUrls) >= self::BATCH_SIZE) {
                     $regeneratedForStore += $this->replaceUrls($newUrls);
@@ -147,6 +169,8 @@ class RegenerateProductUrl
     }
 
     /**
+     * Generate output
+     *
      * @param OutputInterface $output
      *
      * @return void
@@ -157,6 +181,8 @@ class RegenerateProductUrl
     }
 
     /**
+     * Generate count
+     *
      * @return int
      */
     public function getRegeneratedCount(): int
@@ -165,6 +191,8 @@ class RegenerateProductUrl
     }
 
     /**
+     * Log output
+     *
      * @param string $message
      *
      * @return void
@@ -177,8 +205,10 @@ class RegenerateProductUrl
     }
 
     /**
+     * Replace urls
+     *
      * @param array $urls
-     * @param bool  $last
+     * @param bool $last
      *
      * @return int
      */
@@ -189,7 +219,7 @@ class RegenerateProductUrl
         foreach ($urls as $url) {
             try {
                 $this->urlPersist->replace([$url]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->log(
                     sprintf(
                         $e->getMessage() . ' Entity id: %d Request path: %s',
@@ -200,7 +230,7 @@ class RegenerateProductUrl
             }
         }
         $count = count($urls);
-        $urls  = [];
+        $urls = [];
 
         return $count;
     }
@@ -214,14 +244,14 @@ class RegenerateProductUrl
      *
      * @return void
      */
-    private function deleteUrls(array &$productIds, StoreInterface $store, bool $last = false): void
+    private function deleteUrls(array $productIds, StoreInterface $store, bool $last = false): void
     {
         $this->log(sprintf('deleteUrls%s batch: %d', $last ? ' last' : '', count($productIds)));
         $this->urlPersist->deleteByData([
-            UrlRewrite::ENTITY_ID     => $productIds,
-            UrlRewrite::ENTITY_TYPE   => ProductUrlRewriteGenerator::ENTITY_TYPE,
+            UrlRewrite::ENTITY_ID => $productIds,
+            UrlRewrite::ENTITY_TYPE => ProductUrlRewriteGenerator::ENTITY_TYPE,
             UrlRewrite::REDIRECT_TYPE => 0,
-            UrlRewrite::STORE_ID      => $store->getId()
+            UrlRewrite::STORE_ID => $store->getId()
         ]);
     }
 }

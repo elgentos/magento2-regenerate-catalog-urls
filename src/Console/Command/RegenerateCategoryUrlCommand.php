@@ -24,23 +24,45 @@ use Magento\Framework\App\State;
 
 class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 {
+    /**
+     * @var CategoryUrlRewriteGenerator
+     */
     private CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator;
 
+    /**
+     * @var UrlPersistInterface
+     */
     private UrlPersistInterface $urlPersist;
 
+    /**
+     * @var CategoryCollectionFactory
+     */
     private CategoryCollectionFactory $categoryCollectionFactory;
 
-    private Emulation $emulation;
+    /**
+     * @var ?Emulation
+     */
+    private ?Emulation $emulation = null;
 
+    /**
+     * @param StoreManagerInterface $storeManager
+     * @param State $state
+     * @param RegenerateProductUrl $regenerateProductUrl
+     * @param QuestionHelper $questionHelper
+     * @param CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator
+     * @param UrlPersistInterface $urlPersist
+     * @param CategoryCollectionFactory $categoryCollectionFactory
+     * @param Emulation $emulation
+     */
     public function __construct(
-        StoreManagerInterface       $storeManager,
-        State                       $state,
-        RegenerateProductUrl        $regenerateProductUrl,
-        QuestionHelper              $questionHelper,
+        StoreManagerInterface $storeManager,
+        State $state,
+        RegenerateProductUrl $regenerateProductUrl,
+        QuestionHelper $questionHelper,
         CategoryUrlRewriteGenerator $categoryUrlRewriteGenerator,
-        UrlPersistInterface         $urlPersist,
-        CategoryCollectionFactory   $categoryCollectionFactory,
-        Emulation\Proxy             $emulation
+        UrlPersistInterface $urlPersist,
+        CategoryCollectionFactory $categoryCollectionFactory,
+        Emulation $emulation
     ) {
         parent::__construct($storeManager, $state, $regenerateProductUrl, $questionHelper);
         $this->categoryUrlRewriteGenerator = $categoryUrlRewriteGenerator;
@@ -50,7 +72,7 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
     }
 
     /**
-     * @return void
+     * @inheritdoc
      */
     protected function configure(): void
     {
@@ -72,11 +94,7 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @return int
-     * @throws LocalizedException
+     * @inheritdoc
      */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -93,15 +111,22 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 
         $stores = $this->getChosenStores();
 
-        $rootIdOption = intval($input->getOption('root')) ?: false;
+        $rootIdOption = (int)$input->getOption('root') ?: false;
 
         foreach ($stores as $storeId) {
-            $currentRootId = intval($this->storeManager->getGroup($this->storeManager->getStore($storeId)->getStoreGroupId())->getRootCategoryId());
-            if($rootIdOption !== false) {
+            $currentRootId = $this->storeManager->getGroup(
+                $this->storeManager->getStore($storeId)->getStoreGroupId()
+            )->getRootCategoryId();
+            if ($rootIdOption !== false) {
                 $fromRootId = $rootIdOption;
-                if($rootIdOption !== $currentRootId) {
+                if ($rootIdOption !== $currentRootId) {
                     $output->writeln(
-                        sprintf('Skipping store %s because its root category id %s, differs from the passed root category %s', $storeId, $currentRootId, $fromRootId)
+                        sprintf(
+                            'Skipping store %s because its root category id %s, differs from the passed root category %s', //phpcs:ignore Generic.Files.LineLength.TooLong
+                            $storeId,
+                            $currentRootId,
+                            $fromRootId
+                        )
                     );
                     continue;
                 }
@@ -113,9 +138,12 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
                 sprintf('Processing store %s...', $storeId)
             );
 
-            $rootCategory = $this->categoryCollectionFactory->create()->addAttributeToFilter('entity_id', $fromRootId)->addAttributeToSelect("name")->getFirstItem();
-            if(!$rootCategory->getId()) {
-                throw new \Exception(sprintf("Root category with ID %d, was not found.", $fromRootId));
+            $rootCategory = $this->categoryCollectionFactory->create()->addAttributeToFilter(
+                'entity_id',
+                $fromRootId
+            )->addAttributeToSelect("name")->getFirstItem();
+            if (!$rootCategory->getId()) {
+                throw new Exception(sprintf("Root category with ID %d, was not found.", $fromRootId));
             }
             $this->emulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
 
@@ -124,13 +152,12 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
                 ->addAttributeToSelect(['name', 'url_path', 'url_key', 'path'])
                 ->addAttributeToFilter('level', ['gt' => 1]);
 
-
             $categoryIds = $input->getArgument('cids');
             if ($fromRootId) {
                 //path LIKE '1/rootcategory/%' OR path = '1/rootcategory'
                 $categories->addAttributeToFilter('path', [
                     'like' => '1/' . $fromRootId . '/%',
-                    '='    => '1/' . $fromRootId
+                    '=' => '1/' . $fromRootId
                 ]);
             }
             if (!empty($categoryIds)) {
@@ -139,12 +166,14 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 
             foreach ($categories as $category) {
                 $output->writeln(
-                    sprintf('Regenerating urls for %s (%s)',
-                        implode('/',  [
+                    sprintf(
+                        'Regenerating urls for %s (%s)',
+                        implode('/', [
                             $rootCategory->getName(),
-                            ...array_map(fn($category) => $category->getName(), $category->getParentCategories())
+                            ...array_map(fn ($category) => $category->getName(), $category->getParentCategories())
                         ]),
-                        $category->getId())
+                        $category->getId()
+                    )
                 );
 
                 $this->urlPersist->deleteByData(
