@@ -33,6 +33,7 @@ Arguments:
 Options:
  --store (-s)          Use a specific store (store Id, store code or 'all')
  --root (-r)           Regenerate for root category and its children, ignoring cids. 
+ --verbose (-v)        Verbose mode to display the errors. Eg: duplicated product urls
  --help (-h)           Display this help message
 ```
 
