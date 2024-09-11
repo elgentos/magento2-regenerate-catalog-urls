@@ -109,7 +109,6 @@ class RegenerateProductUrl
                 ->setStoreId($store->getId())
                 ->addStoreFilter($store->getId())
                 ->addAttributeToSelect('name')
-                ->addFieldToFilter('status', ['eq' => Status::STATUS_ENABLED])
                 ->addFieldToFilter('visibility', ['gt' => Visibility::VISIBILITY_NOT_VISIBLE]);
 
             if ($productIds == null || (is_array($productIds) && empty($productIds))) {
