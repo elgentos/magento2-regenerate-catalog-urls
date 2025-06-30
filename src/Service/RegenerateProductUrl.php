@@ -224,23 +224,19 @@ class RegenerateProductUrl
 
         if ($this->isVerboseMode) {
             foreach ($urls as $url) {
-                try {
-                    $this->urlPersist->replace([$url]);
-                } catch (Exception $e) {
-                    $this->log(
-                        sprintf(
-                            $e->getMessage() . ' Entity id: %d Request path: %s',
-                            $url->getEntityId(),
-                            $url->getRequestPath()
-                        )
-                    );
-                }
+                $this->log(sprintf(
+                    'Preparing to replace URL: Entity ID %d, Request Path %s',
+                    $url->getEntityId(),
+                    $url->getRequestPath()
+                ));
             }
-        } else {
-            try {
-                $this->urlPersist->replace($urls);
-            } catch (Exception $e) {//phpcs:ignore Magento2.CodeAnalysis.EmptyBlock.DetectedCatch
-            }
+        }
+        
+        try {
+            $this->urlPersist->replace($urls);
+        } catch (Exception $e) {
+            // Log errors at batch level, or optionally retry smaller batches
+            $this->log($e->getMessage());
         }
 
         $count = count($urls);
