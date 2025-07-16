@@ -114,7 +114,7 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
         $rootIdOption = (int)$input->getOption('root') ?: false;
 
         foreach ($stores as $storeId) {
-            $currentRootId = $this->storeManager->getGroup(
+            $currentRootId = (int)$this->storeManager->getGroup(
                 $this->storeManager->getStore($storeId)->getStoreGroupId()
             )->getRootCategoryId();
             if ($rootIdOption !== false) {
