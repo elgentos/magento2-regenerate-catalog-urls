@@ -104,7 +104,7 @@ class RegenerateCategoryPathCommand extends AbstractRegenerateCommand
                 ->addAttributeToSelect(['name', 'url_path', 'url_key', 'path'])
                 ->addAttributeToFilter('level', ['gt' => 1]);
 
-            $fromRootOnly = (int)$input->getOption('root') ?? 0;
+            $fromRootOnly = (int)$input->getOption('root');
             $categoryIds = $input->getArgument('cids');
             if ($fromRootOnly) {
                 //path LIKE '1/rootcategory/%' OR path = '1/rootcategory'

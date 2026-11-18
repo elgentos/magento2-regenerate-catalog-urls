@@ -7,6 +7,7 @@ namespace Elgentos\RegenerateCatalogUrls\Console\Command;
 use Elgentos\RegenerateCatalogUrls\Service\RegenerateProductUrl;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -85,7 +86,7 @@ abstract class AbstractRegenerateCommand extends Command
     /**
      * Get chosen stores
      *
-     * @return array
+     * @return array<int|string|false|null>
      * @throws LocalizedException
      */
     protected function getChosenStores(): array
@@ -123,7 +124,7 @@ abstract class AbstractRegenerateCommand extends Command
      * Get all stores
      *
      * @param bool|null $withDefault
-     * @return array
+     * @return StoreInterface[]
      */
     protected function getAllStores(?bool $withDefault = false): array
     {

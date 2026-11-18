@@ -112,7 +112,7 @@ class RegenerateProductUrl
                 ->addFieldToFilter('status', ['eq' => Status::STATUS_ENABLED])
                 ->addFieldToFilter('visibility', ['gt' => Visibility::VISIBILITY_NOT_VISIBLE]);
 
-            if ($productIds == null || (is_array($productIds) && empty($productIds))) {
+            if (empty($productIds)) {
                 $productIds = $collection->getAllIds();
             }
             $collection->addIdFilter($productIds);
@@ -213,7 +213,7 @@ class RegenerateProductUrl
     /**
      * Replace urls
      *
-     * @param array $urls
+     * @param UrlRewrite[] $urls
      * @param bool $last
      *
      * @return int
@@ -248,7 +248,7 @@ class RegenerateProductUrl
     /**
      * Remove old product urls
      *
-     * @param array $productIds
+     * @param array<int|string> $productIds
      * @param StoreInterface $store
      * @param bool $last
      *
