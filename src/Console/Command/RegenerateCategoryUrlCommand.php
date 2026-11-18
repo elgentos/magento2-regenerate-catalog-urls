@@ -115,7 +115,7 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 
         foreach ($stores as $storeId) {
             $currentRootId = (int)$this->storeManager->getGroup(
-                $this->storeManager->getStore($storeId)->getStoreGroupId()
+                (string)$this->storeManager->getStore($storeId)->getStoreGroupId()
             )->getRootCategoryId();
             if ($rootIdOption !== false) {
                 $fromRootId = $rootIdOption;
@@ -140,7 +140,7 @@ class RegenerateCategoryUrlCommand extends AbstractRegenerateCommand
 
             $rootCategory = $this->categoryCollectionFactory->create()->addAttributeToFilter(
                 'entity_id',
-                $fromRootId
+                ['eq' => $fromRootId]
             )->addAttributeToSelect("name")->getFirstItem();
             if (!$rootCategory->getId()) {
                 throw new Exception(sprintf("Root category with ID %d, was not found.", $fromRootId));

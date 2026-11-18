@@ -6,5 +6,5 @@
          xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd">
     <description>PHPCS</description>
     <!--<exclude-pattern>path/to/exclude/*</exclude-pattern>-->
-    <rule ref="./vendor/mediact/coding-standard-magento2/src/MediactMagento2"/>
+    <rule ref="Magento2"/>
 </ruleset>

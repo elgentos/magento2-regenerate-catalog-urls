@@ -93,7 +93,7 @@ class Product extends Action
     /**
      * Get selected Product IDs
      *
-     * @return array
+     * @return array<int|string>
      * @throws LocalizedException
      */
     private function getSelectedProductIds(): array

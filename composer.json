@@ -36,8 +36,12 @@
         "fisheye/module-url-rewrite-optimiser": "A Magento module that stops URL rewrites with category paths being generated for products when 'Use Categories Path for Product URLs' setting is disabled in config."
     },
     "require-dev": {
+        "bitexpert/phpstan-magento": "^0.44",
+        "magento/magento-coding-standard": "^41",
+        "mediact/coding-standard-magento2": "@stable",
         "mediact/testing-suite": "^2.9",
-        "mediact/coding-standard-magento2": "@stable"
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1"
     },
     "repositories": {
         "magento": {
@@ -61,7 +65,11 @@
         ]
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
+        }
     },
     "autoload": {
         "files": [
