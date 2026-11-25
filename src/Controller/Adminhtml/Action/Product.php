@@ -9,12 +9,20 @@ use Elgentos\RegenerateCatalogUrls\Service\RegenerateProductUrl;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Ui\Component\MassAction\Filter;
 
-class Product extends Action
+class Product extends Action implements HttpPostActionInterface
 {
+    /**
+     * Only admin roles that can manage products may regenerate product URLs
+     *
+     * @see _isAllowed()
+     */
+    public const ADMIN_RESOURCE = 'Magento_Catalog::products';
+
     /**
      * @var RegenerateProductUrl
      */
